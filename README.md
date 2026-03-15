@@ -139,3 +139,9 @@ App routes:
 
 - This repository currently exposes `dev` and `build` scripts.
 - Test and lint scripts are not yet configured in `package.json`.
+
+## Copyright Notice
+
+Copyright © 2026 Aldrian Loberiano.
+This project is intended strictly for personal use.
+Any unauthorized commercial use, distribution, or copying of the code or materials in this repository is prohibited and may constitute copyright infringement.
