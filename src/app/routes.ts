@@ -10,11 +10,13 @@ import { RecipeImport } from './components/recipe-import';
 import { MealPlanner } from './components/meal-planner';
 import { GroceryListPage } from './components/grocery-list';
 import { FavoritesPage } from './components/favorites-page';
+import { DashboardLoadingPage } from './components/dashboard-loading';
 
 export const router = createBrowserRouter([
   { path: '/', Component: HomePage },
   { path: '/login', Component: LoginPage },
   { path: '/register', Component: RegisterPage },
+  { path: '/dashboard-loading', Component: DashboardLoadingPage },
   {
     Component: Layout,
     children: [
