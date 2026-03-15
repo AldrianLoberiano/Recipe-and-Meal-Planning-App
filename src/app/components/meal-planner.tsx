@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -8,7 +8,7 @@ import { DAYS_OF_WEEK, MEAL_SLOTS, CATEGORIES, Recipe } from '../data';
 import {
   Calendar, Plus, X, Trash2, ShoppingCart, RotateCcw,
   ChefHat, Search, GripVertical, ArrowRightLeft, Smartphone, BookOpen,
-  Download, Upload, Flame, Beef, Wheat, Droplets, Leaf
+  Flame, Beef, Wheat, Droplets, Leaf
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { MealTemplatesModal } from './meal-templates';
@@ -153,9 +153,8 @@ function DroppableMealSlot({
 }
 
 function MealPlannerContent() {
-  const { recipes, mealPlan, setMealForDay, moveMeal, clearMealPlan, exportMealPlan, importMealPlan, generateGroceryList, addNotification } = useAppStore();
+  const { recipes, mealPlan, setMealForDay, moveMeal, clearMealPlan, generateGroceryList, addNotification } = useAppStore();
   const navigate = useNavigate();
-  const importInputRef = useRef<HTMLInputElement | null>(null);
   const [showRecipePicker, setShowRecipePicker] = useState<{ day: string; slot: string } | null>(null);
   const [pickerSearch, setPickerSearch] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -221,35 +220,6 @@ function MealPlannerContent() {
     };
   }, [mealPlan, recipes]);
 
-  const handleExportMealPlan = useCallback(() => {
-    const json = exportMealPlan();
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const stamp = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = `meal-plan-${stamp}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    toast.success('Meal plan exported as JSON.');
-  }, [exportMealPlan]);
-
-  const handleImportMealPlan = useCallback(async (file: File) => {
-    try {
-      const content = await file.text();
-      const result = importMealPlan(content);
-      if (result.success) {
-        toast.success(result.message);
-      } else {
-        toast.error(result.message);
-      }
-    } catch {
-      toast.error('Unable to read file. Please try again.');
-    }
-  }, [importMealPlan]);
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -262,36 +232,11 @@ function MealPlannerContent() {
           <p className="text-muted-foreground">
             {totalMeals} meals planned this week
             <span className="text-[0.75rem] ml-2 text-primary/60">
-              &middot; Includes drinks and desserts
+              &middot; Includes drinks, desserts, and fruits
             </span>
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <input
-            ref={importInputRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                void handleImportMealPlan(file);
-              }
-              e.target.value = '';
-            }}
-          />
-          <button
-            onClick={handleExportMealPlan}
-            className="px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors inline-flex items-center gap-2 text-[0.85rem]"
-          >
-            <Download className="w-4 h-4" /> Export JSON
-          </button>
-          <button
-            onClick={() => importInputRef.current?.click()}
-            className="px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors inline-flex items-center gap-2 text-[0.85rem]"
-          >
-            <Upload className="w-4 h-4" /> Import JSON
-          </button>
           <button
             onClick={() => setShowTemplates(true)}
             className="px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors inline-flex items-center gap-2 text-[0.85rem]"
@@ -376,7 +321,7 @@ function MealPlannerContent() {
                 </span>
               </div>
 
-              <div className="p-3 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2">
+              <div className="p-3 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-2">
                 {MEAL_SLOTS.map(slot => {
                   const recipeId = (dayPlan as any)[slot];
                   const recipe = recipeId ? recipes.find(r => r.id === recipeId) : null;
