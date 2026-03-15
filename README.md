@@ -249,6 +249,23 @@ Protected/app layout routes:
 - `dist/` and `node_modules/` are generated/runtime directories and are not listed in the source tree above.
 - Meal plan JSON export/import controls were intentionally removed from the planner UI.
 
+## Git Ignore and Sensitive Files
+
+The repository ignores sensitive and machine-local files through `.gitignore`.
+
+Important ignored categories:
+
+- Environment files: `.env`, `.env.local`, `.env.*.local` (`.env.example` stays tracked).
+- SQL dump/import artifacts: `*.sql`.
+- Local databases and backups: `*.sqlite`, `*.sqlite3`, `*.db`, `*.bak`, `*.dump`.
+- Secrets and certificates: `*.pem`, `*.key`, `*.p12`, `*.pfx`, `*.crt`, `secrets.*`, `*.secret`.
+- Local build/cache/log files: `dist/`, `.vite/`, `coverage/`, `*.log`.
+
+Security reminder:
+
+- Do not commit real credentials, connection strings, private keys, or production database dumps.
+- If a sensitive file was already committed before adding ignore rules, rotate credentials and remove it from git history.
+
 ## Copyright Notice
 
 Copyright © 2026 Aldrian Loberiano.
