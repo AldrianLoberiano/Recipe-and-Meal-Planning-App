@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 interface ParsedRecipe {
   title: string;
   description: string;
-  category: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  category: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'drinks' | 'dessert';
   prepTime: number;
   cookTime: number;
   servings: number;
@@ -138,12 +138,16 @@ function parseRecipeText(text: string): ParsedRecipe {
   }
 
   // Try to detect category from keywords
-  let category: 'breakfast' | 'lunch' | 'dinner' | 'snack' = 'dinner';
+  let category: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'drinks' | 'dessert' = 'dinner';
   const lowerText = text.toLowerCase();
   if (/breakfast|pancake|waffle|omelette|scramble|cereal|toast|smoothie|morning/i.test(lowerText)) {
     category = 'breakfast';
   } else if (/lunch|salad|sandwich|wrap|soup|bowl/i.test(lowerText)) {
     category = 'lunch';
+  } else if (/drink|juice|coffee|tea|shake|latte|lemonade|cocktail|mocktail|beverage/i.test(lowerText)) {
+    category = 'drinks';
+  } else if (/dessert|cake|flan|pudding|ice cream|cookie|brownie|pastry|sweet/i.test(lowerText)) {
+    category = 'dessert';
   } else if (/snack|energy|bite|bar|dip|trail|cookie|chip/i.test(lowerText)) {
     category = 'snack';
   }
@@ -445,6 +449,8 @@ export function RecipeImport() {
                   <option value="lunch">Lunch</option>
                   <option value="dinner">Dinner</option>
                   <option value="snack">Snack</option>
+                  <option value="drinks">Drinks</option>
+                  <option value="dessert">Dessert</option>
                 </select>
               </div>
               <div>
