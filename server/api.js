@@ -16,6 +16,11 @@ if (!mysqlUrl) {
   throw new Error('Missing MYSQL_URL in environment variables.');
 }
 
+const configuredDbName = process.env.MYSQL_DATABASE?.trim() || 'recipe_and_meal_planner';
+const dbName = /^[a-zA-Z0-9_]+$/.test(configuredDbName)
+  ? configuredDbName
+  : 'recipe_and_meal_planner';
+
 const pool = mysql.createPool({
   uri: mysqlUrl,
   connectionLimit: Number(process.env.MYSQL_POOL_LIMIT ?? 10),
@@ -23,8 +28,33 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-async function ensureImageColumnType() {
-  await pool.query('ALTER TABLE recipes MODIFY COLUMN image_url LONGTEXT NOT NULL');
+async function ensureRecipeSyncTable() {
+  await pool.query(
+    `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+  );
+
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS \`${dbName}\`.\`recipes\` (
+      id BIGINT UNSIGNED NOT NULL,
+      title VARCHAR(180) NOT NULL,
+      description TEXT NOT NULL,
+      category VARCHAR(30) NOT NULL,
+      image_url LONGTEXT NOT NULL,
+      prep_time INT NOT NULL DEFAULT 0,
+      cook_time INT NOT NULL DEFAULT 0,
+      servings INT NOT NULL DEFAULT 1,
+      calories INT NOT NULL DEFAULT 0,
+      protein DECIMAL(8,2) NOT NULL DEFAULT 0,
+      carbs DECIMAL(8,2) NOT NULL DEFAULT 0,
+      fat DECIMAL(8,2) NOT NULL DEFAULT 0,
+      fiber DECIMAL(8,2) NOT NULL DEFAULT 0,
+      rating DECIMAL(3,1) NOT NULL DEFAULT 0,
+      rating_count INT NOT NULL DEFAULT 0,
+      is_favorite TINYINT(1) NOT NULL DEFAULT 0,
+      created_at DATE NOT NULL,
+      PRIMARY KEY (id)
+    ) ENGINE=InnoDB`
+  );
 }
 
 app.get('/api/health', async (_req, res) => {
@@ -71,10 +101,10 @@ app.post('/api/recipes/sync', async (req, res) => {
       ? recipe.createdAt
       : new Date().toISOString().slice(0, 10);
 
-    await ensureImageColumnType();
+    await ensureRecipeSyncTable();
 
     await pool.query(
-      `INSERT INTO recipes (
+      `INSERT INTO \`${dbName}\`.\`recipes\` (
         id, title, description, category, image_url,
         prep_time, cook_time, servings,
         calories, protein, carbs, fat, fiber,
@@ -121,6 +151,7 @@ app.post('/api/recipes/sync', async (req, res) => {
     res.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown server error';
+    console.error('[recipes/sync] error:', message);
     res.status(500).json({ ok: false, message });
   }
 });
