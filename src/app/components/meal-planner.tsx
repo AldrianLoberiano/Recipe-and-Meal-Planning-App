@@ -262,7 +262,7 @@ function MealPlannerContent() {
           <p className="text-muted-foreground">
             {totalMeals} meals planned this week
             <span className="text-[0.75rem] ml-2 text-primary/60">
-              &middot; Drag meals to rearrange
+              &middot; Includes drinks and desserts
             </span>
           </p>
         </div>
@@ -376,7 +376,7 @@ function MealPlannerContent() {
                 </span>
               </div>
 
-              <div className="p-3 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              <div className="p-3 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2">
                 {MEAL_SLOTS.map(slot => {
                   const recipeId = (dayPlan as any)[slot];
                   const recipe = recipeId ? recipes.find(r => r.id === recipeId) : null;
