@@ -174,7 +174,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       const candidate = parsed.mealPlan ?? parsed;
       const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-      const validSlots = new Set(['breakfast', 'lunch', 'dinner', 'snack']);
+      const validSlots = new Set(['breakfast', 'lunch', 'dinner', 'snack', 'drinks', 'dessert']);
 
       if (!candidate || typeof candidate !== 'object') {
         return { success: false, message: 'Invalid JSON: missing meal plan object.' };
