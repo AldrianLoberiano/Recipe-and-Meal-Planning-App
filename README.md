@@ -55,6 +55,51 @@ The app is organized around these product areas:
 
 3. Open the local URL shown in terminal output (typically `http://localhost:5173`).
 
+## Demo: How to Use the System
+
+Use this quick walkthrough to test the full app flow in under 10 minutes.
+
+1. Open the app and sign in
+
+- Go to `/login`.
+- Enter any email and any password (demo mode accepts any credentials).
+- Click Sign In to open the dashboard.
+
+2. Explore recipe management
+
+- Open Recipes to view existing entries.
+- Open any recipe card to see details.
+- In recipe details, try Step-by-Step Mode and use the built-in cooking timer.
+- Add a recipe from `/recipes/new` or import one from `/recipes/import`.
+
+3. Plan your weekly meals
+
+- Open Meal Planner.
+- Add meals to breakfast, lunch, dinner, or snack slots for each day.
+- Drag and drop meals between slots and days.
+
+4. View nutrition summary
+
+- In Meal Planner, check Nutritional Summary.
+- Review weekly total calories, protein, carbs, fat, and fiber.
+- Review daily macro averages.
+
+5. Export and import your meal plan
+
+- In Meal Planner, click Export JSON to download a backup.
+- Click Import JSON and choose a saved meal-plan file.
+
+6. Generate and use grocery list
+
+- In Meal Planner, click Generate Grocery List.
+- Open Grocery List and mark items as purchased.
+- Use Clear Purchased when needed.
+
+7. Test empty-list warnings
+
+- If your grocery list is empty, the app shows a warning banner.
+- If you try to regenerate with no planned meals, the app shows a warning notification.
+
 ## Available Scripts
 
 - `npm run dev` - Start the Vite development server.
