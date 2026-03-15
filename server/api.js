@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -56,6 +57,125 @@ async function ensureRecipeSyncTable() {
     ) ENGINE=InnoDB`
   );
 }
+
+async function ensureUsersTable() {
+  await pool.query(
+    `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+  );
+
+  await pool.query(
+    `CREATE TABLE IF NOT EXISTS \`${dbName}\`.\`users\` (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      name VARCHAR(120) NOT NULL,
+      email VARCHAR(190) NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      avatar_url VARCHAR(500) NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_users_email (email)
+    ) ENGINE=InnoDB`
+  );
+}
+
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, storedHash) {
+  if (!storedHash || typeof storedHash !== 'string' || !storedHash.includes(':')) {
+    return false;
+  }
+
+  const [salt, key] = storedHash.split(':');
+  const hashBuffer = Buffer.from(key, 'hex');
+  const candidateBuffer = crypto.scryptSync(password, salt, hashBuffer.length);
+  return crypto.timingSafeEqual(hashBuffer, candidateBuffer);
+}
+
+app.post('/api/auth/register', async (req, res) => {
+  const name = (req.body?.name ?? '').toString().trim();
+  const email = (req.body?.email ?? '').toString().trim().toLowerCase();
+  const password = (req.body?.password ?? '').toString();
+
+  if (!name || !email || !password) {
+    res.status(400).json({ ok: false, message: 'Name, email, and password are required.' });
+    return;
+  }
+
+  if (password.length < 6) {
+    res.status(400).json({ ok: false, message: 'Password must be at least 6 characters.' });
+    return;
+  }
+
+  try {
+    await ensureUsersTable();
+
+    const passwordHash = hashPassword(password);
+    const [result] = await pool.query(
+      `INSERT INTO \`${dbName}\`.\`users\` (name, email, password_hash) VALUES (?, ?, ?)`,
+      [name, email, passwordHash]
+    );
+
+    const id = Number(result.insertId);
+    res.status(201).json({
+      ok: true,
+      user: {
+        id: id.toString(),
+        name,
+        email,
+      },
+    });
+  } catch (error) {
+    if (error && typeof error === 'object' && error.code === 'ER_DUP_ENTRY') {
+      res.status(409).json({ ok: false, message: 'Email is already registered.' });
+      return;
+    }
+
+    const message = error instanceof Error ? error.message : 'Unknown server error';
+    console.error('[auth/register] error:', message);
+    res.status(500).json({ ok: false, message: 'Unable to register account.' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const email = (req.body?.email ?? '').toString().trim().toLowerCase();
+  const password = (req.body?.password ?? '').toString();
+
+  if (!email || !password) {
+    res.status(400).json({ ok: false, message: 'Email and password are required.' });
+    return;
+  }
+
+  try {
+    await ensureUsersTable();
+
+    const [rows] = await pool.query(
+      `SELECT id, name, email, password_hash FROM \`${dbName}\`.\`users\` WHERE email = ? LIMIT 1`,
+      [email]
+    );
+
+    const user = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+    if (!user || !verifyPassword(password, user.password_hash)) {
+      res.status(401).json({ ok: false, message: 'Invalid email or password.' });
+      return;
+    }
+
+    res.json({
+      ok: true,
+      user: {
+        id: user.id.toString(),
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown server error';
+    console.error('[auth/login] error:', message);
+    res.status(500).json({ ok: false, message: 'Unable to sign in.' });
+  }
+});
 
 app.get('/api/health', async (_req, res) => {
   try {
