@@ -185,7 +185,8 @@ function MealPlannerContent() {
   const filteredPickerRecipes = recipes.filter(r => {
     if (!showRecipePicker) return false;
     const matchesSearch = !pickerSearch || r.title.toLowerCase().includes(pickerSearch.toLowerCase());
-    return matchesSearch;
+    const matchesCategory = r.category === showRecipePicker.slot;
+    return matchesSearch && matchesCategory;
   });
 
   const totalMeals = Object.values(mealPlan).reduce((c, d) => c + Object.keys(d).length, 0);
