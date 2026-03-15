@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -7,7 +7,8 @@ import { useAppStore } from '../store';
 import { DAYS_OF_WEEK, MEAL_SLOTS, CATEGORIES, Recipe } from '../data';
 import {
   Calendar, Plus, X, Trash2, ShoppingCart, RotateCcw,
-  ChefHat, Search, GripVertical, ArrowRightLeft, Smartphone, BookOpen
+  ChefHat, Search, GripVertical, ArrowRightLeft, Smartphone, BookOpen,
+  Download, Upload, Flame, Beef, Wheat, Droplets, Leaf
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { MealTemplatesModal } from './meal-templates';
@@ -152,8 +153,9 @@ function DroppableMealSlot({
 }
 
 function MealPlannerContent() {
-  const { recipes, mealPlan, setMealForDay, moveMeal, clearMealPlan, generateGroceryList, addNotification } = useAppStore();
+  const { recipes, mealPlan, setMealForDay, moveMeal, clearMealPlan, exportMealPlan, importMealPlan, generateGroceryList, addNotification } = useAppStore();
   const navigate = useNavigate();
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const [showRecipePicker, setShowRecipePicker] = useState<{ day: string; slot: string } | null>(null);
   const [pickerSearch, setPickerSearch] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -189,6 +191,65 @@ function MealPlannerContent() {
 
   const totalMeals = Object.values(mealPlan).reduce((c, d) => c + Object.keys(d).length, 0);
 
+  const weeklyNutrition = useMemo(() => {
+    const totals = { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, meals: 0 };
+
+    for (const day of DAYS_OF_WEEK) {
+      const dayPlan = mealPlan[day] || {};
+      for (const slot of MEAL_SLOTS) {
+        const recipeId = (dayPlan as any)[slot] as string | undefined;
+        if (!recipeId) continue;
+        const recipe = recipes.find(r => r.id === recipeId);
+        if (!recipe) continue;
+
+        totals.calories += recipe.nutrition.calories;
+        totals.protein += recipe.nutrition.protein;
+        totals.carbs += recipe.nutrition.carbs;
+        totals.fat += recipe.nutrition.fat;
+        totals.fiber += recipe.nutrition.fiber;
+        totals.meals += 1;
+      }
+    }
+
+    return {
+      ...totals,
+      avgDailyCalories: Math.round(totals.calories / 7),
+      avgDailyProtein: Math.round((totals.protein / 7) * 10) / 10,
+      avgDailyCarbs: Math.round((totals.carbs / 7) * 10) / 10,
+      avgDailyFat: Math.round((totals.fat / 7) * 10) / 10,
+      avgDailyFiber: Math.round((totals.fiber / 7) * 10) / 10,
+    };
+  }, [mealPlan, recipes]);
+
+  const handleExportMealPlan = useCallback(() => {
+    const json = exportMealPlan();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `meal-plan-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast.success('Meal plan exported as JSON.');
+  }, [exportMealPlan]);
+
+  const handleImportMealPlan = useCallback(async (file: File) => {
+    try {
+      const content = await file.text();
+      const result = importMealPlan(content);
+      if (result.success) {
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
+      }
+    } catch {
+      toast.error('Unable to read file. Please try again.');
+    }
+  }, [importMealPlan]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -206,6 +267,31 @@ function MealPlannerContent() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                void handleImportMealPlan(file);
+              }
+              e.target.value = '';
+            }}
+          />
+          <button
+            onClick={handleExportMealPlan}
+            className="px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors inline-flex items-center gap-2 text-[0.85rem]"
+          >
+            <Download className="w-4 h-4" /> Export JSON
+          </button>
+          <button
+            onClick={() => importInputRef.current?.click()}
+            className="px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors inline-flex items-center gap-2 text-[0.85rem]"
+          >
+            <Upload className="w-4 h-4" /> Import JSON
+          </button>
           <button
             onClick={() => setShowTemplates(true)}
             className="px-3 py-2 rounded-lg border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors inline-flex items-center gap-2 text-[0.85rem]"
@@ -225,6 +311,46 @@ function MealPlannerContent() {
             <ShoppingCart className="w-4 h-4" /> Generate Grocery List
           </button>
         </div>
+      </div>
+
+      {/* Weekly Nutrition Summary */}
+      <div className="bg-card rounded-xl border border-border p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="flex items-center gap-2">
+            <Flame className="w-5 h-5 text-primary" /> Nutritional Summary
+          </h2>
+          <p className="text-[0.8rem] text-muted-foreground">Weekly totals and daily averages</p>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+          <div className="bg-secondary/40 rounded-lg p-3">
+            <p className="text-[0.75rem] text-muted-foreground">Calories</p>
+            <p className="text-xl text-orange-500">{weeklyNutrition.calories}</p>
+            <p className="text-[0.7rem] text-muted-foreground">{weeklyNutrition.avgDailyCalories}/day</p>
+          </div>
+          <div className="bg-secondary/40 rounded-lg p-3">
+            <p className="text-[0.75rem] text-muted-foreground inline-flex items-center gap-1"><Beef className="w-3.5 h-3.5" />Protein</p>
+            <p className="text-xl text-blue-500">{weeklyNutrition.protein}g</p>
+            <p className="text-[0.7rem] text-muted-foreground">{weeklyNutrition.avgDailyProtein}g/day</p>
+          </div>
+          <div className="bg-secondary/40 rounded-lg p-3">
+            <p className="text-[0.75rem] text-muted-foreground inline-flex items-center gap-1"><Wheat className="w-3.5 h-3.5" />Carbs</p>
+            <p className="text-xl text-green-600">{weeklyNutrition.carbs}g</p>
+            <p className="text-[0.7rem] text-muted-foreground">{weeklyNutrition.avgDailyCarbs}g/day</p>
+          </div>
+          <div className="bg-secondary/40 rounded-lg p-3">
+            <p className="text-[0.75rem] text-muted-foreground inline-flex items-center gap-1"><Droplets className="w-3.5 h-3.5" />Fat</p>
+            <p className="text-xl text-yellow-500">{weeklyNutrition.fat}g</p>
+            <p className="text-[0.7rem] text-muted-foreground">{weeklyNutrition.avgDailyFat}g/day</p>
+          </div>
+          <div className="bg-secondary/40 rounded-lg p-3">
+            <p className="text-[0.75rem] text-muted-foreground inline-flex items-center gap-1"><Leaf className="w-3.5 h-3.5" />Fiber</p>
+            <p className="text-xl text-emerald-600">{weeklyNutrition.fiber}g</p>
+            <p className="text-[0.7rem] text-muted-foreground">{weeklyNutrition.avgDailyFiber}g/day</p>
+          </div>
+        </div>
+
+        <p className="text-[0.8rem] text-muted-foreground">Planned meals counted: {weeklyNutrition.meals}</p>
       </div>
 
       {/* Calendar Grid */}
