@@ -78,7 +78,7 @@ export const defaultRecipes: Recipe[] = [
     title: 'Chicken Arroz Caldo',
     description: 'Comforting Filipino rice porridge simmered with chicken, ginger, and garlic, then topped with spring onions and calamansi.',
     category: 'breakfast',
-    image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=1080&q=80',
+    image: 'https://imgs.search.brave.com/96afDab1cgLEE0a-R8Y4eaCEyuyItPKhMvRtyhNw168/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/Zm94eWZvbGtzeS5j/b20vd3AtY29udGVu/dC91cGxvYWRzLzIw/MTUvMDYvYXJyb3ot/Y2FsZG8tcmVjaXBl/LmpwZw',
     prepTime: 15,
     cookTime: 40,
     servings: 4,
