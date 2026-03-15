@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useAppStore } from '../store';
 import { CATEGORIES, Ingredient } from '../data';
 import {
   ArrowLeft, Heart, Star, Clock, Users, Flame, Edit, Trash2,
-  ChefHat, Printer, Share2, Minus, Plus, RotateCcw
+  ChefHat, Printer, Share2, Minus, Plus, RotateCcw,
+  Play, Pause, SkipBack, SkipForward, TimerReset
 } from 'lucide-react';
 import { RecipeShareModal } from './recipe-share-modal';
 
@@ -91,6 +92,11 @@ export function RecipeDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [scaledServings, setScaledServings] = useState<number | null>(null);
+  const [isStepMode, setIsStepMode] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
+  const [timerMinutes, setTimerMinutes] = useState(5);
+  const [timeLeft, setTimeLeft] = useState(5 * 60);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   const activeServings = scaledServings ?? recipe?.servings ?? 1;
   const scaleFactor = recipe ? activeServings / recipe.servings : 1;
@@ -107,6 +113,32 @@ export function RecipeDetail() {
     // But total changes. We show per-serving still, unchanged.
     // Actually, the user might expect total nutrition to scale. Let's keep per-serving the same.
     return recipe.nutrition;
+  }, [recipe]);
+
+  useEffect(() => {
+    if (!isTimerRunning || timeLeft <= 0) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          window.clearInterval(interval);
+          setIsTimerRunning(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [isTimerRunning, timeLeft]);
+
+  useEffect(() => {
+    if (!recipe) return;
+    const suggestedStepMinutes = Math.max(1, Math.round(recipe.cookTime / Math.max(recipe.instructions.length, 1)));
+    setTimerMinutes(suggestedStepMinutes);
+    setTimeLeft(suggestedStepMinutes * 60);
   }, [recipe]);
 
   if (!recipe) {
@@ -142,6 +174,25 @@ export function RecipeDetail() {
 
   const resetServings = () => {
     setScaledServings(null);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const secs = (seconds % 60).toString().padStart(2, '0');
+    return `${mins}:${secs}`;
+  };
+
+  const applyTimerPreset = (minutes: number) => {
+    setTimerMinutes(minutes);
+    setTimeLeft(minutes * 60);
+    setIsTimerRunning(false);
+  };
+
+  const goToStep = (nextStep: number) => {
+    const bounded = Math.min(Math.max(nextStep, 0), recipe.instructions.length - 1);
+    setActiveStep(bounded);
+    setIsTimerRunning(false);
+    setTimeLeft(timerMinutes * 60);
   };
 
   return (
@@ -307,17 +358,92 @@ export function RecipeDetail() {
         {/* Instructions */}
         <div className="lg:col-span-3">
           <div className="bg-card rounded-xl border border-border p-5">
-            <h2 className="mb-4">Instructions</h2>
-            <ol className="space-y-4">
-              {recipe.instructions.map((step, i) => (
-                <li key={i} className="flex gap-4">
-                  <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 text-[0.8rem]">
-                    {i + 1}
+            <div className="flex items-center justify-between mb-4">
+              <h2>Instructions</h2>
+              <button
+                onClick={() => setIsStepMode(prev => !prev)}
+                className={`px-3 py-1.5 rounded-lg text-[0.8rem] border transition-colors ${isStepMode ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground hover:text-foreground'}`}
+              >
+                {isStepMode ? 'Exit Step Mode' : 'Step-by-Step Mode'}
+              </button>
+            </div>
+
+            {isStepMode ? (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                  <p className="text-[0.75rem] text-muted-foreground mb-1">Step {activeStep + 1} of {recipe.instructions.length}</p>
+                  <p className="text-[0.95rem] leading-relaxed">{recipe.instructions[activeStep]}</p>
+                </div>
+
+                <div className="rounded-xl border border-border p-4">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <p className="text-[0.8rem] text-muted-foreground">Step timer</p>
+                    <div className="flex items-center gap-2">
+                      {[3, 5, 10, 15].map(min => (
+                        <button
+                          key={min}
+                          onClick={() => applyTimerPreset(min)}
+                          className={`px-2.5 py-1 rounded-md text-[0.75rem] border ${timerMinutes === min ? 'border-primary text-primary bg-primary/10' : 'border-border text-muted-foreground hover:text-foreground'}`}
+                        >
+                          {min}m
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <p className="text-[0.9rem] pt-0.5 flex-1">{step}</p>
-                </li>
-              ))}
-            </ol>
+
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className={`text-2xl ${timeLeft === 0 ? 'text-destructive' : 'text-primary'}`}>{formatTime(timeLeft)}</p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsTimerRunning(prev => !prev)}
+                        disabled={timeLeft === 0}
+                        className="px-3 py-1.5 rounded-lg border border-border text-[0.8rem] inline-flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                        {isTimerRunning ? 'Pause' : 'Start'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setTimeLeft(timerMinutes * 60);
+                          setIsTimerRunning(false);
+                        }}
+                        className="px-3 py-1.5 rounded-lg border border-border text-[0.8rem] inline-flex items-center gap-1.5"
+                      >
+                        <TimerReset className="w-3.5 h-3.5" /> Reset
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => goToStep(activeStep - 1)}
+                    disabled={activeStep === 0}
+                    className="px-3 py-2 rounded-lg border border-border text-[0.85rem] inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <SkipBack className="w-4 h-4" /> Previous
+                  </button>
+                  <button
+                    onClick={() => goToStep(activeStep + 1)}
+                    disabled={activeStep >= recipe.instructions.length - 1}
+                    className="px-3 py-2 rounded-lg border border-border text-[0.85rem] inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Next <SkipForward className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <ol className="space-y-4">
+                {recipe.instructions.map((step, i) => (
+                  <li key={i} className="flex gap-4">
+                    <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 text-[0.8rem]">
+                      {i + 1}
+                    </div>
+                    <p className="text-[0.9rem] pt-0.5 flex-1">{step}</p>
+                  </li>
+                ))}
+              </ol>
+            )}
           </div>
         </div>
       </div>
