@@ -8,8 +8,8 @@ interface AppState {
   mealPlan: MealPlan;
   groceryList: GroceryItem[];
   notifications: { id: string; message: string; time: string }[];
-  login: (email: string, password: string) => boolean;
-  register: (name: string, email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  register: (name: string, email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   addRecipe: (recipe: Omit<Recipe, 'id' | 'rating' | 'ratingCount' | 'isFavorite' | 'createdAt'>) => void;
   updateRecipe: (id: string, recipe: Partial<Recipe>) => void;
@@ -81,6 +81,11 @@ function syncRecipeToSql(recipe: Recipe) {
   });
 }
 
+function buildApiUrl(path: string): string {
+  const baseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').toString().trim();
+  return `${baseUrl}${path}`;
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => loadFromStorage('mealplanner_user', null));
   const [recipes, setRecipes] = useState<Recipe[]>(() => loadRecipesWithSeedMerge());
@@ -93,20 +98,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => { localStorage.setItem('mealplanner_grocery', JSON.stringify(groceryList)); }, [groceryList]);
   useEffect(() => { if (user) localStorage.setItem('mealplanner_user', JSON.stringify(user)); else localStorage.removeItem('mealplanner_user'); }, [user]);
 
-  const login = useCallback((email: string, _password: string) => {
-    const u: User = { id: '1', name: email.split('@')[0], email };
-    setUser(u);
-    return true;
+  const login = useCallback(async (email: string, password: string) => {
+    try {
+      const response = await fetch(buildApiUrl('/api/auth/login'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok || !payload?.user) {
+        return { success: false, message: payload?.message ?? 'Invalid email or password.' };
+      }
+
+      setUser(payload.user as User);
+      return { success: true };
+    } catch {
+      return { success: false, message: 'Unable to connect to the server.' };
+    }
   }, []);
 
-  const register = useCallback((name: string, email: string, _password: string) => {
-    const u: User = { id: Date.now().toString(), name, email };
-    setUser(u);
-    setRecipes([]);
-    setMealPlan(emptyMealPlan);
-    setGroceryList([]);
-    setNotifications([]);
-    return true;
+  const register = useCallback(async (name: string, email: string, password: string) => {
+    try {
+      const response = await fetch(buildApiUrl('/api/auth/register'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok || !payload?.user) {
+        return { success: false, message: payload?.message ?? 'Unable to create account.' };
+      }
+
+      setUser(payload.user as User);
+      setRecipes([]);
+      setMealPlan(emptyMealPlan);
+      setGroceryList([]);
+      setNotifications([]);
+      return { success: true };
+    } catch {
+      return { success: false, message: 'Unable to connect to the server.' };
+    }
   }, []);
 
   const logout = useCallback(() => { setUser(null); }, []);
