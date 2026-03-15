@@ -85,6 +85,15 @@ export function LoginPage() {
             </p>
           </div>
 
+          <div className="mt-3 text-center">
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-border text-[0.85rem] text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            >
+              Back to Home
+            </Link>
+          </div>
+
           <div className="mt-4 p-3 bg-secondary rounded-lg">
             <p className="text-[0.8rem] text-muted-foreground text-center">
               Demo: Enter any email and password to sign in
