@@ -78,6 +78,33 @@ const testimonials = [
   },
 ];
 
+const demoSteps = [
+  {
+    title: '1. Sign In (Demo Mode)',
+    description: 'Go to login and enter any email/password to access the app instantly.',
+  },
+  {
+    title: '2. Add or Import Recipes',
+    description: 'Browse recipe cards, create your own, or import recipe text automatically.',
+  },
+  {
+    title: '3. Plan Meals for the Week',
+    description: 'Drag and drop recipes into breakfast, lunch, dinner, and snack slots.',
+  },
+  {
+    title: '4. Review Nutrition Summary',
+    description: 'Check weekly calories, protein, carbs, fat, and fiber with daily averages.',
+  },
+  {
+    title: '5. Export or Import Plan JSON',
+    description: 'Back up your meal plan or share it by exporting/importing JSON.',
+  },
+  {
+    title: '6. Generate Grocery List',
+    description: 'Create your shopping list automatically and track purchased items.',
+  },
+];
+
 export function HomePage() {
   const { isAuthenticated } = useAppStore();
   const navigate = useNavigate();
@@ -357,6 +384,48 @@ export function HomePage() {
                 <p className="text-muted-foreground text-[0.9rem]">{item.description}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Sample Recipes */}
+      <section className="py-16 sm:py-24 bg-card/50 border-y border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl sm:text-4xl text-foreground mb-3">Live Demo Walkthrough</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              New to MealCraft? Follow this quick path to experience the full workflow in a few minutes.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {demoSteps.map((step, i) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-card rounded-xl border border-border p-5"
+              >
+                <h3 className="text-foreground mb-2">{step.title}</h3>
+                <p className="text-muted-foreground text-[0.9rem]">{step.description}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <button
+              onClick={handleLogin}
+              className="bg-primary text-primary-foreground px-8 py-3 rounded-xl hover:opacity-90 transition inline-flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+            >
+              Start Demo <ArrowRight className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </section>
