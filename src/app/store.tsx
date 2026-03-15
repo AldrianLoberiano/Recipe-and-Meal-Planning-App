@@ -36,6 +36,16 @@ const AppContext =
 
 globalForAppContext.__MEALCRAFT_APP_CONTEXT__ = AppContext;
 
+const emptyMealPlan: MealPlan = {
+  Monday: {},
+  Tuesday: {},
+  Wednesday: {},
+  Thursday: {},
+  Friday: {},
+  Saturday: {},
+  Sunday: {},
+};
+
 function loadFromStorage<T>(key: string, fallback: T): T {
   try {
     const stored = localStorage.getItem(key);
@@ -90,8 +100,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback((name: string, email: string, _password: string) => {
-    const u: User = { id: '1', name, email };
+    const u: User = { id: Date.now().toString(), name, email };
     setUser(u);
+    setRecipes([]);
+    setMealPlan(emptyMealPlan);
+    setGroceryList([]);
+    setNotifications([]);
     return true;
   }, []);
 
@@ -183,7 +197,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const clearMealPlan = useCallback(() => {
-    setMealPlan({ Monday: {}, Tuesday: {}, Wednesday: {}, Thursday: {}, Friday: {}, Saturday: {}, Sunday: {} });
+    setMealPlan(emptyMealPlan);
   }, []);
 
   const generateGroceryList = useCallback(() => {
