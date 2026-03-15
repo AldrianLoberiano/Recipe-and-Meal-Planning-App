@@ -4,3 +4,4 @@
 
 # Keep the root README tracked
 !README.md
+node_modules
