@@ -6,6 +6,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "dev:host": "vite --host --port 5174",
     "server": "node server/api.js"
   },
   "dependencies": {
