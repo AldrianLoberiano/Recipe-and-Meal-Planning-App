@@ -19,8 +19,6 @@ interface AppState {
   setMealForDay: (day: string, slot: string, recipeId: string | undefined) => void;
   moveMeal: (fromDay: string, fromSlot: string, toDay: string, toSlot: string) => void;
   clearMealPlan: () => void;
-  exportMealPlan: () => string;
-  importMealPlan: (json: string) => { success: boolean; message: string };
   generateGroceryList: () => void;
   toggleGroceryItem: (id: string) => void;
   clearPurchasedItems: () => void;
@@ -188,65 +186,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMealPlan({ Monday: {}, Tuesday: {}, Wednesday: {}, Thursday: {}, Friday: {}, Saturday: {}, Sunday: {} });
   }, []);
 
-  const exportMealPlan = useCallback(() => {
-    const payload = {
-      version: 1,
-      exportedAt: new Date().toISOString(),
-      mealPlan,
-    };
-
-    return JSON.stringify(payload, null, 2);
-  }, [mealPlan]);
-
-  const importMealPlan = useCallback((json: string) => {
-    try {
-      const parsed = JSON.parse(json) as {
-        mealPlan?: MealPlan;
-      };
-
-      const candidate = parsed.mealPlan ?? parsed;
-      const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-      const validSlots = new Set(['breakfast', 'lunch', 'dinner', 'snack', 'drinks', 'dessert']);
-
-      if (!candidate || typeof candidate !== 'object') {
-        return { success: false, message: 'Invalid JSON: missing meal plan object.' };
-      }
-
-      const normalized: MealPlan = {
-        Monday: {},
-        Tuesday: {},
-        Wednesday: {},
-        Thursday: {},
-        Friday: {},
-        Saturday: {},
-        Sunday: {},
-      };
-
-      for (const day of validDays) {
-        const dayPlan = (candidate as any)[day] ?? {};
-        if (!dayPlan || typeof dayPlan !== 'object') {
-          continue;
-        }
-
-        for (const slot of Object.keys(dayPlan)) {
-          if (!validSlots.has(slot)) {
-            continue;
-          }
-
-          const recipeId = (dayPlan as any)[slot];
-          if (typeof recipeId === 'string' && recipeId.length > 0) {
-            (normalized[day] as any)[slot] = recipeId;
-          }
-        }
-      }
-
-      setMealPlan(normalized);
-      return { success: true, message: 'Meal plan imported successfully.' };
-    } catch {
-      return { success: false, message: 'Invalid JSON format. Please check your file.' };
-    }
-  }, []);
-
   const generateGroceryList = useCallback(() => {
     const items: GroceryItem[] = [];
     const ingredientMap = new Map<string, GroceryItem>();
@@ -304,7 +243,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider value={{
       user, isAuthenticated: !!user, recipes, mealPlan, groceryList, notifications,
       login, register, logout, addRecipe, updateRecipe, deleteRecipe,
-      toggleFavorite, rateRecipe, setMealForDay, moveMeal, clearMealPlan, exportMealPlan, importMealPlan,
+      toggleFavorite, rateRecipe, setMealForDay, moveMeal, clearMealPlan,
       generateGroceryList, toggleGroceryItem, clearPurchasedItems,
       addNotification, dismissNotification,
     }}>
