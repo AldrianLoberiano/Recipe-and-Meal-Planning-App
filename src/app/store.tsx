@@ -112,6 +112,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(payload.user as User);
+      setRecipes(defaultRecipes);
+      setMealPlan(defaultMealPlan);
+      setGroceryList([]);
+      setNotifications([]);
       return { success: true };
     } catch {
       return { success: false, message: 'Unable to connect to the server.' };
@@ -132,8 +136,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(null);
-      setRecipes([]);
-      setMealPlan(emptyMealPlan);
+      setRecipes(defaultRecipes);
+      setMealPlan(defaultMealPlan);
       setGroceryList([]);
       setNotifications([]);
       return { success: true };
