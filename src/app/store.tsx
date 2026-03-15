@@ -26,7 +26,15 @@ interface AppState {
   dismissNotification: (id: string) => void;
 }
 
-const AppContext = createContext<AppState | null>(null);
+type GlobalWithAppContext = typeof globalThis & {
+  __MEALCRAFT_APP_CONTEXT__?: React.Context<AppState | null>;
+};
+
+const globalForAppContext = globalThis as GlobalWithAppContext;
+const AppContext =
+  globalForAppContext.__MEALCRAFT_APP_CONTEXT__ ?? createContext<AppState | null>(null);
+
+globalForAppContext.__MEALCRAFT_APP_CONTEXT__ = AppContext;
 
 function loadFromStorage<T>(key: string, fallback: T): T {
   try {
