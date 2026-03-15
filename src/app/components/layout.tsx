@@ -15,6 +15,8 @@ export function Layout() {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const handleLogout = () => {
+    const confirmed = window.confirm('Are you sure you want to logout?');
+    if (!confirmed) return;
     logout();
     navigate('/');
   };
