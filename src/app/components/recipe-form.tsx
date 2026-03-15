@@ -52,6 +52,20 @@ export function RecipeForm() {
     setInstructions(prev => prev.map((s, idx) => idx === i ? value : s));
   };
 
+  const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setImage(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   const validate = () => {
     const errs: string[] = [];
     if (!title.trim()) errs.push('Title is required');
@@ -131,9 +145,15 @@ export function RecipeForm() {
             </div>
             <div>
               <label className="block mb-1.5 text-[0.85rem]">Image URL</label>
-              <div className="relative">
-                <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input value={image} onChange={e => setImage(e.target.value)} className={`${inputClass} pl-10`} placeholder="https://..." />
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input value={image} onChange={e => setImage(e.target.value)} className={`${inputClass} pl-10`} placeholder="https://..." />
+                </div>
+                <label className="px-3 py-2.5 rounded-lg border border-border text-[0.8rem] text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer whitespace-nowrap">
+                  Upload Image
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageFileSelect} />
+                </label>
               </div>
             </div>
           </div>
