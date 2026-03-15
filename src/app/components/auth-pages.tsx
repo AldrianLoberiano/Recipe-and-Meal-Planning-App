@@ -17,7 +17,7 @@ export function LoginPage() {
     if (!email || !password) { setError('Please fill in all fields'); return; }
     const result = await login(email, password);
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/dashboard-loading');
     } else {
       setError(result.message ?? 'Invalid credentials');
     }
@@ -117,7 +117,7 @@ export function RegisterPage() {
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
     const result = await register(name, email, password);
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/login');
     } else {
       setError(result.message ?? 'Unable to create account');
     }
