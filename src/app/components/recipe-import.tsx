@@ -4,7 +4,7 @@ import { useAppStore } from '../store';
 import { Recipe } from '../data';
 import {
   Upload, FileText, ArrowLeft, Sparkles, ChefHat,
-  Clock, Users, AlertCircle, Check, X, Clipboard
+  Clock, Users, AlertCircle, Check, X, Clipboard, ImageIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -296,6 +296,22 @@ export function RecipeImport() {
     setParsedRecipe({ ...parsedRecipe, instructions: [...parsedRecipe.instructions, ''] });
   };
 
+  const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!parsedRecipe) return;
+
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        updateField('image', reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -397,6 +413,25 @@ export function RecipeImport() {
                 rows={2}
                 className="w-full bg-input-background rounded-lg border border-border px-4 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition resize-none"
               />
+            </div>
+            <div>
+              <label className="text-[0.85rem] text-muted-foreground block mb-1">Image URL</label>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={parsedRecipe.image}
+                    onChange={e => updateField('image', e.target.value)}
+                    className="w-full bg-input-background rounded-lg border border-border pl-10 pr-3 py-2.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition"
+                    placeholder="https://..."
+                  />
+                </div>
+                <label className="px-3 py-2.5 rounded-lg border border-border text-[0.8rem] text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer whitespace-nowrap">
+                  Upload Image
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageFileSelect} />
+                </label>
+              </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div>
