@@ -47,6 +47,19 @@ function loadFromStorage<T>(key: string, fallback: T): T {
   }
 }
 
+function loadRecipesWithSeedMerge(): Recipe[] {
+  const stored = loadFromStorage<Recipe[]>('mealplanner_recipes', defaultRecipes);
+
+  if (!Array.isArray(stored)) {
+    return defaultRecipes;
+  }
+
+  const existingIds = new Set(stored.map(recipe => recipe.id));
+  const missingDefaults = defaultRecipes.filter(recipe => !existingIds.has(recipe.id));
+
+  return missingDefaults.length > 0 ? [...stored, ...missingDefaults] : stored;
+}
+
 function syncRecipeToSql(recipe: Recipe) {
   const baseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').toString().trim();
   const endpoint = `${baseUrl}/api/recipes/sync`;
@@ -62,7 +75,7 @@ function syncRecipeToSql(recipe: Recipe) {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => loadFromStorage('mealplanner_user', null));
-  const [recipes, setRecipes] = useState<Recipe[]>(() => loadFromStorage('mealplanner_recipes', defaultRecipes));
+  const [recipes, setRecipes] = useState<Recipe[]>(() => loadRecipesWithSeedMerge());
   const [mealPlan, setMealPlan] = useState<MealPlan>(() => loadFromStorage('mealplanner_mealplan', defaultMealPlan));
   const [groceryList, setGroceryList] = useState<GroceryItem[]>(() => loadFromStorage('mealplanner_grocery', []));
   const [notifications, setNotifications] = useState<{ id: string; message: string; time: string }[]>([]);
