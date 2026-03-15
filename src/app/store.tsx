@@ -131,7 +131,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return { success: false, message: payload?.message ?? 'Unable to create account.' };
       }
 
-      setUser(payload.user as User);
+      setUser(null);
       setRecipes([]);
       setMealPlan(emptyMealPlan);
       setGroceryList([]);
