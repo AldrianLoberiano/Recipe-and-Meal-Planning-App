@@ -16,7 +16,7 @@ export interface Recipe {
   id: string;
   title: string;
   description: string;
-  category: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'drinks' | 'dessert';
+  category: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'drinks' | 'dessert' | 'fruits';
   image: string;
   prepTime: number;
   cookTime: number;
@@ -38,6 +38,7 @@ export interface MealPlan {
     snack?: string;
     drinks?: string;
     dessert?: string;
+    fruits?: string;
   };
 }
 
@@ -66,9 +67,10 @@ export const CATEGORIES = [
   { value: 'snack', label: 'Snack', emoji: '🍿' },
   { value: 'drinks', label: 'Drinks', emoji: '🥤' },
   { value: 'dessert', label: 'Dessert', emoji: '🍰' },
+  { value: 'fruits', label: 'Fruits', emoji: '🍎' },
 ] as const;
 
-export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack', 'drinks', 'dessert'] as const;
+export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack', 'drinks', 'dessert', 'fruits'] as const;
 
 export const defaultRecipes: Recipe[] = [
   {
@@ -445,14 +447,69 @@ export const defaultRecipes: Recipe[] = [
     isFavorite: true,
     createdAt: '2026-03-10',
   },
+  {
+    id: '13',
+    title: 'Fresh Tropical Fruit Bowl',
+    description: 'Colorful mix of mango, pineapple, banana, and papaya finished with a squeeze of calamansi.',
+    category: 'fruits',
+    image: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&w=1080&q=80',
+    prepTime: 12,
+    cookTime: 0,
+    servings: 4,
+    ingredients: [
+      { name: 'Mango', amount: '1', unit: 'piece' },
+      { name: 'Pineapple', amount: '1', unit: 'cup' },
+      { name: 'Banana', amount: '2', unit: 'pieces' },
+      { name: 'Papaya', amount: '1', unit: 'cup' },
+      { name: 'Calamansi juice', amount: '1', unit: 'tbsp' },
+      { name: 'Honey', amount: '1', unit: 'tbsp' },
+    ],
+    instructions: [
+      'Dice all fruits into bite-sized pieces and add to a chilled bowl.',
+      'Mix calamansi juice and honey, then drizzle over the fruits.',
+      'Toss gently and serve immediately.',
+    ],
+    nutrition: { calories: 150, protein: 2, carbs: 38, fat: 1, fiber: 5 },
+    rating: 4.7,
+    ratingCount: 88,
+    isFavorite: false,
+    createdAt: '2026-03-11',
+  },
+  {
+    id: '14',
+    title: 'Apple Grape Yogurt Cup',
+    description: 'Light fruit snack with crisp apples, sweet grapes, and creamy yogurt.',
+    category: 'fruits',
+    image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1080&q=80',
+    prepTime: 8,
+    cookTime: 0,
+    servings: 2,
+    ingredients: [
+      { name: 'Apple', amount: '1', unit: 'piece' },
+      { name: 'Seedless grapes', amount: '1', unit: 'cup' },
+      { name: 'Greek yogurt', amount: '3/4', unit: 'cup' },
+      { name: 'Chia seeds', amount: '1', unit: 'tsp' },
+      { name: 'Honey', amount: '1', unit: 'tsp' },
+    ],
+    instructions: [
+      'Slice apples and halve grapes, then place in serving cups.',
+      'Top each cup with yogurt and drizzle with honey.',
+      'Sprinkle chia seeds on top and serve cold.',
+    ],
+    nutrition: { calories: 190, protein: 7, carbs: 33, fat: 4, fiber: 4 },
+    rating: 4.6,
+    ratingCount: 74,
+    isFavorite: false,
+    createdAt: '2026-03-12',
+  },
 ];
 
 export const defaultMealPlan: MealPlan = {
-  Monday: { breakfast: '1', lunch: '2', dinner: '3', drinks: '9', dessert: '10' },
-  Tuesday: { breakfast: '6', lunch: '7', dinner: '5', drinks: '11' },
-  Wednesday: { breakfast: '1', snack: '4', dessert: '12' },
-  Thursday: { lunch: '2', dinner: '3', snack: '4', drinks: '9' },
-  Friday: { breakfast: '6', dinner: '5', dessert: '12' },
-  Saturday: { breakfast: '1', lunch: '7', dinner: '3', snack: '4', drinks: '11' },
-  Sunday: { breakfast: '6', lunch: '2', dinner: '5', snack: '4', drinks: '9', dessert: '12' },
+  Monday: { breakfast: '1', lunch: '2', dinner: '3', drinks: '9', dessert: '10', fruits: '13' },
+  Tuesday: { breakfast: '6', lunch: '7', dinner: '5', drinks: '11', fruits: '14' },
+  Wednesday: { breakfast: '1', snack: '4', dessert: '12', fruits: '13' },
+  Thursday: { lunch: '2', dinner: '3', snack: '4', drinks: '9', fruits: '14' },
+  Friday: { breakfast: '6', dinner: '5', dessert: '12', fruits: '13' },
+  Saturday: { breakfast: '1', lunch: '7', dinner: '3', snack: '4', drinks: '11', fruits: '14' },
+  Sunday: { breakfast: '6', lunch: '2', dinner: '5', snack: '4', drinks: '9', dessert: '12', fruits: '13' },
 };
