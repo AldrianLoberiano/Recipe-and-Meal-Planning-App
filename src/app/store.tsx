@@ -47,6 +47,19 @@ function loadFromStorage<T>(key: string, fallback: T): T {
   }
 }
 
+function syncRecipeToSql(recipe: Recipe) {
+  const baseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').toString().trim();
+  const endpoint = `${baseUrl}/api/recipes/sync`;
+
+  void fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ recipe }),
+  }).catch(() => {
+    // Keep UI responsive even when API is offline.
+  });
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => loadFromStorage('mealplanner_user', null));
   const [recipes, setRecipes] = useState<Recipe[]>(() => loadFromStorage('mealplanner_recipes', defaultRecipes));
@@ -83,10 +96,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString().split('T')[0],
     };
     setRecipes(prev => [newRecipe, ...prev]);
+    syncRecipeToSql(newRecipe);
   }, []);
 
   const updateRecipe = useCallback((id: string, updates: Partial<Recipe>) => {
-    setRecipes(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+    setRecipes(prev => prev.map(r => {
+      if (r.id !== id) return r;
+      const updatedRecipe = { ...r, ...updates };
+      syncRecipeToSql(updatedRecipe);
+      return updatedRecipe;
+    }));
   }, []);
 
   const deleteRecipe = useCallback((id: string) => {
