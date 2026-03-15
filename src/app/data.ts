@@ -16,7 +16,7 @@ export interface Recipe {
   id: string;
   title: string;
   description: string;
-  category: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  category: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'drinks' | 'dessert';
   image: string;
   prepTime: number;
   cookTime: number;
@@ -36,6 +36,8 @@ export interface MealPlan {
     lunch?: string;
     dinner?: string;
     snack?: string;
+    drinks?: string;
+    dessert?: string;
   };
 }
 
@@ -62,9 +64,11 @@ export const CATEGORIES = [
   { value: 'lunch', label: 'Lunch', emoji: '☀️' },
   { value: 'dinner', label: 'Dinner', emoji: '🌙' },
   { value: 'snack', label: 'Snack', emoji: '🍿' },
+  { value: 'drinks', label: 'Drinks', emoji: '🥤' },
+  { value: 'dessert', label: 'Dessert', emoji: '🍰' },
 ] as const;
 
-export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
+export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack', 'drinks', 'dessert'] as const;
 
 export const defaultRecipes: Recipe[] = [
   {
@@ -327,14 +331,70 @@ export const defaultRecipes: Recipe[] = [
     isFavorite: false,
     createdAt: '2026-03-05',
   },
+  {
+    id: '9',
+    title: 'Calamansi Juice',
+    description: 'Refreshing Filipino citrus drink made with fresh calamansi, water, and a touch of sugar.',
+    category: 'drinks',
+    image: 'https://images.unsplash.com/photo-1523677011781-c91d1bbe2f9e?auto=format&fit=crop&w=1080&q=80',
+    prepTime: 8,
+    cookTime: 0,
+    servings: 4,
+    ingredients: [
+      { name: 'Calamansi', amount: '12', unit: 'pieces' },
+      { name: 'Water', amount: '4', unit: 'cups' },
+      { name: 'Sugar', amount: '4', unit: 'tbsp' },
+      { name: 'Ice', amount: '2', unit: 'cups' },
+    ],
+    instructions: [
+      'Cut and squeeze calamansi into a pitcher, removing seeds.',
+      'Add water and sugar, then stir until dissolved.',
+      'Adjust sweetness based on taste preference.',
+      'Serve over ice.',
+    ],
+    nutrition: { calories: 90, protein: 0, carbs: 23, fat: 0, fiber: 0 },
+    rating: 4.6,
+    ratingCount: 122,
+    isFavorite: false,
+    createdAt: '2026-03-07',
+  },
+  {
+    id: '10',
+    title: 'Leche Flan',
+    description: 'Classic silky Filipino caramel custard made with egg yolks, milk, and vanilla.',
+    category: 'dessert',
+    image: 'https://images.unsplash.com/photo-1518733057094-95b53143d2a7?auto=format&fit=crop&w=1080&q=80',
+    prepTime: 15,
+    cookTime: 45,
+    servings: 8,
+    ingredients: [
+      { name: 'Egg yolks', amount: '10', unit: 'pieces' },
+      { name: 'Condensed milk', amount: '1', unit: 'can' },
+      { name: 'Evaporated milk', amount: '1', unit: 'can' },
+      { name: 'Sugar', amount: '1/2', unit: 'cup' },
+      { name: 'Vanilla extract', amount: '1', unit: 'tsp' },
+    ],
+    instructions: [
+      'Melt sugar in llanera until caramelized, then set aside.',
+      'Whisk egg yolks, condensed milk, evaporated milk, and vanilla.',
+      'Strain mixture and pour into caramel-lined molds.',
+      'Steam for 35-45 minutes until set.',
+      'Cool completely, chill, then unmold before serving.',
+    ],
+    nutrition: { calories: 230, protein: 6, carbs: 30, fat: 10, fiber: 0 },
+    rating: 4.9,
+    ratingCount: 204,
+    isFavorite: true,
+    createdAt: '2026-03-08',
+  },
 ];
 
 export const defaultMealPlan: MealPlan = {
-  Monday: { breakfast: '1', lunch: '2', dinner: '3' },
-  Tuesday: { breakfast: '6', lunch: '7', dinner: '5' },
-  Wednesday: { breakfast: '1', snack: '4' },
-  Thursday: { lunch: '2', dinner: '3', snack: '4' },
-  Friday: { breakfast: '6', dinner: '5' },
-  Saturday: { breakfast: '1', lunch: '7', dinner: '3', snack: '4' },
-  Sunday: { breakfast: '6', lunch: '2', dinner: '5', snack: '4' },
+  Monday: { breakfast: '1', lunch: '2', dinner: '3', drinks: '9', dessert: '10' },
+  Tuesday: { breakfast: '6', lunch: '7', dinner: '5', drinks: '9' },
+  Wednesday: { breakfast: '1', snack: '4', dessert: '10' },
+  Thursday: { lunch: '2', dinner: '3', snack: '4', drinks: '9' },
+  Friday: { breakfast: '6', dinner: '5', dessert: '10' },
+  Saturday: { breakfast: '1', lunch: '7', dinner: '3', snack: '4', drinks: '9' },
+  Sunday: { breakfast: '6', lunch: '2', dinner: '5', snack: '4', drinks: '9', dessert: '10' },
 };
