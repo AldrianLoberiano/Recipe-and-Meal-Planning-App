@@ -1,6 +1,6 @@
 # Recipe and Meal Planning App
 
-Recipe and Meal Planning App is a single-page React application for planning meals and organizing recipes in one place. It supports core day-to-day workflow features: browsing recipes, creating and editing recipe entries, importing recipes, scheduling meals, managing favorites, and generating grocery-list content.
+Recipe and Meal Planning App is a single-page React application for planning meals and organizing recipes in one place. It supports day-to-day workflow features including recipe management, weekly meal scheduling, nutrition tracking, grocery-list generation, and JSON backup/import for meal plans.
 
 ## Project Description
 
@@ -10,17 +10,23 @@ The app is organized around these product areas:
 
 - Authentication entry pages (login/register)
 - Recipe management (list, detail, create, edit, import)
-- Meal planning and templates
+- Meal planning and templates (including drinks and dessert slots)
 - Grocery list support
+- Nutrition summary and plan backup/import tools
 - Favorites and dashboard views
 
 ## Features
 
-- Home, login, and registration screens
+- Home, loading screen, login, and registration screens
 - Dashboard view for app overview
 - Full recipe flow: browse, view details, create, edit, import
+- Step-by-step cooking mode with built-in per-step timer
+- Recipe image URL + image upload support (create and import)
 - Meal planner and meal template screens
-- Grocery list management page
+- Meal slots for breakfast, lunch, dinner, snack, drinks, and dessert
+- Weekly nutritional summary (totals and daily macro averages)
+- Meal plan export/import as JSON
+- Grocery list management page with empty-state warnings
 - Favorites page
 - Shared layout and reusable UI component library
 - Theme-aware styling setup
@@ -32,6 +38,8 @@ The app is organized around these product areas:
 - React Router 7
 - Tailwind CSS 4
 - Radix UI primitives
+- Supabase JS client
+- PostgreSQL client (`pg`) and MySQL client (`mysql2`) server modules
 - Motion, Recharts, React Hook Form, and related UI support libraries
 
 ## Prerequisites
@@ -55,6 +63,22 @@ The app is organized around these product areas:
 
 3. Open the local URL shown in terminal output (typically `http://localhost:5173`).
 
+## Environment Variables
+
+Create a local `.env` file (sample values are available in `.env.example`).
+
+Frontend:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+Server/database modules:
+
+- `DATABASE_URL`
+- `DATABASE_SSL`
+- `MYSQL_URL`
+- `MYSQL_POOL_LIMIT`
+
 ## Demo: How to Use the System
 
 Use this quick walkthrough to test the full app flow in under 10 minutes.
@@ -75,7 +99,7 @@ Use this quick walkthrough to test the full app flow in under 10 minutes.
 3. Plan your weekly meals
 
 - Open Meal Planner.
-- Add meals to breakfast, lunch, dinner, or snack slots for each day.
+- Add meals to breakfast, lunch, dinner, snack, drinks, and dessert slots for each day.
 - Drag and drop meals between slots and days.
 
 4. View nutrition summary
@@ -141,10 +165,19 @@ App routes:
 .
 |-- ATTRIBUTIONS.md
 |-- README.md
+|-- .env.example
 |-- guidelines/
 |   `-- Guidelines.md
+|-- public/
+|   `-- favicon.svg
+|-- server/
+|   |-- db.ts
+|   `-- mysql-db.ts
 |-- src/
 |   |-- main.tsx
+|   |-- database/
+|   |   |-- database.ts
+|   |   `-- indexeddb.ts
 |   |-- app/
 |   |   |-- App.tsx
 |   |   |-- data.ts
@@ -157,6 +190,7 @@ App routes:
 |   |       |-- grocery-list.tsx
 |   |       |-- homepage.tsx
 |   |       |-- layout.tsx
+|   |       |-- loading-screen.tsx
 |   |       |-- meal-planner.tsx
 |   |       |-- meal-templates.tsx
 |   |       |-- recipe-card.tsx
