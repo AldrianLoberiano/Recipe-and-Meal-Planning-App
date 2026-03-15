@@ -12,13 +12,14 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) { setError('Please fill in all fields'); return; }
-    if (login(email, password)) {
+    const result = await login(email, password);
+    if (result.success) {
       navigate('/dashboard');
     } else {
-      setError('Invalid credentials');
+      setError(result.message ?? 'Invalid credentials');
     }
   };
 
@@ -93,12 +94,6 @@ export function LoginPage() {
               Back to Home
             </Link>
           </div>
-
-          <div className="mt-4 p-3 bg-secondary rounded-lg">
-            <p className="text-[0.8rem] text-muted-foreground text-center">
-              Demo: Enter any email and password to sign in
-            </p>
-          </div>
         </div>
       </div>
     </div>
@@ -115,13 +110,16 @@ export function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !password) { setError('Please fill in all fields'); return; }
     if (password !== confirmPassword) { setError('Passwords do not match'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
-    if (register(name, email, password)) {
+    const result = await register(name, email, password);
+    if (result.success) {
       navigate('/dashboard');
+    } else {
+      setError(result.message ?? 'Unable to create account');
     }
   };
 
