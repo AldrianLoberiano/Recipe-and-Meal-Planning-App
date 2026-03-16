@@ -24,6 +24,10 @@ The project includes:
 - Recipe import parser with editable parsed output.
 - Optional recipe sync to MySQL through API endpoint.
 
+## Account Access
+
+Create an account from the Register page and sign in with your own credentials.
+
 ## Tech Stack
 
 - React 18
