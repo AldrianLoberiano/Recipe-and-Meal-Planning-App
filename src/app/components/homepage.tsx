@@ -96,11 +96,7 @@ const demoSteps = [
     description: 'Check weekly calories, protein, carbs, fat, and fiber with daily averages.',
   },
   {
-    title: '5. Export or Import Plan JSON',
-    description: 'Back up your meal plan or share it by exporting/importing JSON.',
-  },
-  {
-    title: '6. Generate Grocery List',
+    title: '5. Generate Grocery List',
     description: 'Create your shopping list automatically and track purchased items.',
   },
 ];
