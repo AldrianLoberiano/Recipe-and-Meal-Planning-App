@@ -68,22 +68,85 @@ function loadRecipesWithSeedMerge(): Recipe[] {
   return missingDefaults.length > 0 ? [...stored, ...missingDefaults] : stored;
 }
 
-function syncRecipeToSql(recipe: Recipe) {
-  const baseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').toString().trim();
-  const endpoint = `${baseUrl}/api/recipes/sync`;
+function normalizeApiBaseUrl(rawBaseUrl: string): string {
+  const trimmed = rawBaseUrl.trim();
+  if (!trimmed) return '';
 
-  void fetch(endpoint, {
+  const withoutTrailingSlash = trimmed.replace(/\/+$/, '');
+  if (/^https?:\/\//i.test(withoutTrailingSlash)) {
+    return withoutTrailingSlash;
+  }
+
+  if (withoutTrailingSlash.startsWith('//')) {
+    const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+    return `${protocol}${withoutTrailingSlash}`;
+  }
+
+  return `http://${withoutTrailingSlash}`;
+}
+
+function buildApiCandidates(path: string): string[] {
+  const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').toString();
+  const normalizedBaseUrl = normalizeApiBaseUrl(rawBaseUrl);
+
+  if (normalizedBaseUrl) {
+    return [`${normalizedBaseUrl}${path}`];
+  }
+
+  const candidates = [path];
+
+  // Helpful fallback for local setups where frontend and API run on different ports.
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+    if (isLocalHost && window.location.port !== '4000') {
+      candidates.push(`http://localhost:4000${path}`);
+    }
+  }
+
+  return candidates;
+}
+
+async function fetchApi(path: string, init?: RequestInit): Promise<Response> {
+  const candidates = buildApiCandidates(path);
+  let lastNetworkError: unknown = null;
+
+  for (let index = 0; index < candidates.length; index += 1) {
+    const endpoint = candidates[index];
+    const isLast = index === candidates.length - 1;
+
+    try {
+      const response = await fetch(endpoint, init);
+
+      // Retry local fallback when same-origin /api route is unavailable.
+      if (!isLast && response.status === 404) {
+        continue;
+      }
+
+      return response;
+    } catch (error) {
+      lastNetworkError = error;
+      if (!isLast) {
+        continue;
+      }
+    }
+  }
+
+  if (lastNetworkError instanceof Error) {
+    throw lastNetworkError;
+  }
+
+  throw new Error('Unable to connect to API.');
+}
+
+function syncRecipeToSql(recipe: Recipe) {
+  void fetchApi('/api/recipes/sync', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ recipe }),
   }).catch(() => {
     // Keep UI responsive even when API is offline.
   });
-}
-
-function buildApiUrl(path: string): string {
-  const baseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').toString().trim();
-  return `${baseUrl}${path}`;
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -100,7 +163,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      const response = await fetch(buildApiUrl('/api/auth/login'), {
+      const response = await fetchApi('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -124,7 +187,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (name: string, email: string, password: string) => {
     try {
-      const response = await fetch(buildApiUrl('/api/auth/register'), {
+      const response = await fetchApi('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
