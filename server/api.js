@@ -12,29 +12,37 @@ const port = Number(process.env.API_PORT ?? 4000);
 app.use(cors());
 app.use(express.json({ limit: '12mb' }));
 
-const mysqlUrl = process.env.MYSQL_URL;
-if (!mysqlUrl) {
-  throw new Error('Missing MYSQL_URL in environment variables.');
-}
+const mysqlUrl = process.env.MYSQL_URL?.trim() ?? '';
 
 const configuredDbName = process.env.MYSQL_DATABASE?.trim() || 'recipe_and_meal_planner';
 const dbName = /^[a-zA-Z0-9_]+$/.test(configuredDbName)
   ? configuredDbName
   : 'recipe_and_meal_planner';
 
-const pool = mysql.createPool({
-  uri: mysqlUrl,
-  connectionLimit: Number(process.env.MYSQL_POOL_LIMIT ?? 10),
-  waitForConnections: true,
-  queueLimit: 0,
-});
+const pool = mysqlUrl
+  ? mysql.createPool({
+      uri: mysqlUrl,
+      connectionLimit: Number(process.env.MYSQL_POOL_LIMIT ?? 10),
+      waitForConnections: true,
+      queueLimit: 0,
+    })
+  : null;
+
+function getPoolOrThrow() {
+  if (!pool) {
+    throw new Error('Database is not configured. Set MYSQL_URL in .env and restart the API.');
+  }
+  return pool;
+}
 
 async function ensureRecipeSyncTable() {
-  await pool.query(
+  const dbPool = getPoolOrThrow();
+
+  await dbPool.query(
     `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
   );
 
-  await pool.query(
+  await dbPool.query(
     `CREATE TABLE IF NOT EXISTS \`${dbName}\`.\`recipes\` (
       id BIGINT UNSIGNED NOT NULL,
       title VARCHAR(180) NOT NULL,
@@ -59,11 +67,13 @@ async function ensureRecipeSyncTable() {
 }
 
 async function ensureUsersTable() {
-  await pool.query(
+  const dbPool = getPoolOrThrow();
+
+  await dbPool.query(
     `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
   );
 
-  await pool.query(
+  await dbPool.query(
     `CREATE TABLE IF NOT EXISTS \`${dbName}\`.\`users\` (
       id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
       name VARCHAR(120) NOT NULL,
@@ -111,9 +121,10 @@ app.post('/api/auth/register', async (req, res) => {
 
   try {
     await ensureUsersTable();
+    const dbPool = getPoolOrThrow();
 
     const passwordHash = hashPassword(password);
-    const [result] = await pool.query(
+    const [result] = await dbPool.query(
       `INSERT INTO \`${dbName}\`.\`users\` (name, email, password_hash) VALUES (?, ?, ?)`,
       [name, email, passwordHash]
     );
@@ -150,8 +161,9 @@ app.post('/api/auth/login', async (req, res) => {
 
   try {
     await ensureUsersTable();
+    const dbPool = getPoolOrThrow();
 
-    const [rows] = await pool.query(
+    const [rows] = await dbPool.query(
       `SELECT id, name, email, password_hash FROM \`${dbName}\`.\`users\` WHERE email = ? LIMIT 1`,
       [email]
     );
@@ -178,6 +190,14 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.get('/api/health', async (_req, res) => {
+  if (!pool) {
+    res.status(503).json({
+      ok: false,
+      message: 'Database is not configured. Set MYSQL_URL in .env and restart the API.',
+    });
+    return;
+  }
+
   try {
     await pool.query('SELECT 1');
     res.json({ ok: true });
