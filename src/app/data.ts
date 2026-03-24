@@ -82,6 +82,64 @@ const DUMMY_CATEGORY_ROTATION: Recipe['category'][] = [
   'fruits',
 ];
 
+const DUMMY_TITLE_PREFIXES: Record<Recipe['category'], string[]> = {
+  breakfast: ['Morning', 'Sunrise', 'Home-Style', 'Weekend', 'Quick'],
+  lunch: ['Noon', 'Hearty', 'Classic', 'Fresh', 'Family'],
+  dinner: ['Evening', 'Savory', 'Comfort', 'Slow-Cooked', 'Chef'],
+  snack: ['Crispy', 'Bite-Size', 'Street-Style', 'Crunchy', 'Sweet'],
+  drinks: ['Chilled', 'Iced', 'Tropical', 'Fresh', 'Zesty'],
+  dessert: ['Silky', 'Creamy', 'Golden', 'Sweet', 'Classic'],
+  fruits: ['Garden', 'Fresh', 'Vibrant', 'Sunny', 'Seasonal'],
+};
+
+const DUMMY_TITLE_NOUNS: Record<Recipe['category'], string[]> = {
+  breakfast: ['Rice Bowl', 'Egg Skillet', 'Porridge', 'Garlic Rice', 'Morning Plate'],
+  lunch: ['Noodle Bowl', 'Stir Fry', 'Rice Plate', 'Stew', 'Pan Special'],
+  dinner: ['Braised Dish', 'Stew Pot', 'Roast Plate', 'Skillet Meal', 'Supper Bowl'],
+  snack: ['Rolls', 'Fritters', 'Bites', 'Cups', 'Crunch Mix'],
+  drinks: ['Cooler', 'Refresher', 'Shake', 'Tea', 'Citrus Mix'],
+  dessert: ['Custard', 'Pudding', 'Cake Cup', 'Sweet Bowl', 'Treat Slice'],
+  fruits: ['Fruit Bowl', 'Fruit Cup', 'Salad Mix', 'Tropical Plate', 'Harvest Bowl'],
+};
+
+const DUMMY_DESCRIPTION_SNIPPETS: Record<Recipe['category'], string[]> = {
+  breakfast: [
+    'A filling start to your day with familiar flavors and simple prep.',
+    'Balanced morning meal designed for quick weekday cooking.',
+    'Comfort-focused breakfast recipe with pantry-friendly ingredients.',
+  ],
+  lunch: [
+    'Midday favorite built for easy batch cooking and packed lunches.',
+    'Flavor-forward lunch option with quick stovetop preparation.',
+    'Everyday lunch recipe that pairs perfectly with warm rice.',
+  ],
+  dinner: [
+    'Hearty dinner recipe made for family-style serving.',
+    'Weeknight dinner with rich flavor and simple step-by-step cooking.',
+    'Comforting evening dish that works well for meal prep.',
+  ],
+  snack: [
+    'A crowd-pleasing snack with crisp texture and bold flavor.',
+    'Fast snack recipe perfect for merienda or party trays.',
+    'Easy-to-share bite-size snack with minimal ingredients.',
+  ],
+  drinks: [
+    'Refreshing drink recipe ideal for warm days and quick serving.',
+    'Light and cooling beverage with a bright, clean finish.',
+    'Simple homemade drink with balanced sweetness and citrus notes.',
+  ],
+  dessert: [
+    'Sweet finish with smooth texture and classic flavor profile.',
+    'Dessert recipe made for celebrations and make-ahead prep.',
+    'Creamy after-meal treat that is easy to portion and serve.',
+  ],
+  fruits: [
+    'Fresh fruit combination for a naturally sweet side or snack.',
+    'Colorful fruit mix that is quick to assemble and serve chilled.',
+    'Simple fruit-forward recipe with light and refreshing flavor.',
+  ],
+};
+
 const buildDummyRecipes = (startId: number, endId: number): Recipe[] => {
   const recipes: Recipe[] = [];
 
@@ -90,11 +148,17 @@ const buildDummyRecipes = (startId: number, endId: number): Recipe[] => {
     const prepTime = 8 + (id % 18);
     const cookTime = category === 'drinks' || category === 'fruits' ? 0 : 10 + (id % 35);
     const servings = 2 + (id % 5);
+    const prefixOptions = DUMMY_TITLE_PREFIXES[category];
+    const nounOptions = DUMMY_TITLE_NOUNS[category];
+    const descriptionOptions = DUMMY_DESCRIPTION_SNIPPETS[category];
+    const prefix = prefixOptions[id % prefixOptions.length];
+    const noun = nounOptions[(id + 2) % nounOptions.length];
+    const descriptionSnippet = descriptionOptions[id % descriptionOptions.length];
 
     recipes.push({
       id: String(id),
-      title: `Sample ${category[0].toUpperCase()}${category.slice(1)} Recipe ${id}`,
-      description: `Dummy ${category} recipe ${id} for UI testing, filtering, and meal plan population.`,
+      title: `${prefix} ${noun} ${id}`,
+      description: `${descriptionSnippet} Generated sample ${category} recipe #${id} for browsing, filtering, and meal-plan testing.`,
       category,
       image: `https://picsum.photos/seed/mealcraft-${id}/1080/720`,
       prepTime,
