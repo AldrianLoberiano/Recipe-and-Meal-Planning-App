@@ -72,61 +72,6 @@ export const CATEGORIES = [
 
 export const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack', 'drinks', 'dessert', 'fruits'] as const;
 
-const DUMMY_CATEGORY_ROTATION: Recipe['category'][] = [
-  'breakfast',
-  'lunch',
-  'dinner',
-  'snack',
-  'drinks',
-  'dessert',
-  'fruits',
-];
-
-const buildDummyRecipes = (startId: number, endId: number): Recipe[] => {
-  const recipes: Recipe[] = [];
-
-  for (let id = startId; id <= endId; id++) {
-    const category = DUMMY_CATEGORY_ROTATION[(id - startId) % DUMMY_CATEGORY_ROTATION.length];
-    const prepTime = 8 + (id % 18);
-    const cookTime = category === 'drinks' || category === 'fruits' ? 0 : 10 + (id % 35);
-    const servings = 2 + (id % 5);
-
-    recipes.push({
-      id: String(id),
-      title: `Sample ${category[0].toUpperCase()}${category.slice(1)} Recipe ${id}`,
-      description: `Dummy ${category} recipe ${id} for UI testing, filtering, and meal plan population.`,
-      category,
-      image: `https://picsum.photos/seed/mealcraft-${id}/1080/720`,
-      prepTime,
-      cookTime,
-      servings,
-      ingredients: [
-        { name: 'Ingredient A', amount: '1', unit: 'cup' },
-        { name: 'Ingredient B', amount: '2', unit: 'tbsp' },
-        { name: 'Ingredient C', amount: '200', unit: 'g' },
-      ],
-      instructions: [
-        `Prepare the ingredients for sample recipe ${id}.`,
-        'Combine all ingredients and cook until done.',
-        'Taste, adjust seasoning, and serve warm or chilled.',
-      ],
-      nutrition: {
-        calories: 120 + (id % 420),
-        protein: 6 + (id % 32),
-        carbs: 14 + (id % 58),
-        fat: 3 + (id % 24),
-        fiber: 1 + (id % 10),
-      },
-      rating: 4.2 + ((id % 8) * 0.1),
-      ratingCount: 12 + (id % 250),
-      isFavorite: id % 9 === 0,
-      createdAt: `2026-03-${String((id % 28) + 1).padStart(2, '0')}`,
-    });
-  }
-
-  return recipes;
-};
-
 export const defaultRecipes: Recipe[] = [
   {
     id: '1',
@@ -557,7 +502,6 @@ export const defaultRecipes: Recipe[] = [
     isFavorite: false,
     createdAt: '2026-03-12',
   },
-  ...buildDummyRecipes(15, 300),
 ];
 
 export const defaultMealPlan: MealPlan = {
