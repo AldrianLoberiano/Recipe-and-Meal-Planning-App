@@ -93,8 +93,6 @@ const getOrderedQuantity = (amount: string): number => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 };
 
-const ACQUIRED_STEP = 1;
-
 export function GroceryListPage() {
   const { groceryList, mealPlan, toggleGroceryItem, clearPurchasedItems, generateGroceryList, addNotification } = useAppStore();
   const [search, setSearch] = useState('');
@@ -235,15 +233,6 @@ export function GroceryListPage() {
     }));
 
     toggleGroceryItem(itemId);
-  };
-
-  const adjustAcquiredQuantity = (itemId: string, delta: number) => {
-    const item = groceryList.find(entry => entry.id === itemId);
-    if (!item) return;
-
-    const current = acquiredById[itemId] ?? (item.purchased ? getOrderedQuantity(item.amount) : 0);
-    const next = Math.max(0, current + delta);
-    setAcquiredQuantity(itemId, next);
   };
 
   return (
@@ -410,28 +399,14 @@ export function GroceryListPage() {
 
                     <div className="mt-3">
                       <label className="text-[0.75rem] text-muted-foreground">Acquired Quantity</label>
-                      <div className="mt-1 flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => adjustAcquiredQuantity(item.id, -ACQUIRED_STEP)}
-                          disabled={acquiredQty <= 0}
-                          className="h-10 w-10 rounded-lg border border-border bg-card text-foreground hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                          aria-label={`Decrease acquired quantity for ${item.name}`}
-                        >
-                          -
-                        </button>
-                        <div className="h-10 min-w-[88px] px-3 rounded-lg border border-border bg-input-background flex items-center justify-center text-[0.9rem]">
-                          {acquiredQty > 0 ? acquiredQty : '-'}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => adjustAcquiredQuantity(item.id, ACQUIRED_STEP)}
-                          className="h-10 w-10 rounded-lg border border-border bg-card text-foreground hover:bg-secondary transition-colors"
-                          aria-label={`Increase acquired quantity for ${item.name}`}
-                        >
-                          +
-                        </button>
-                      </div>
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.5"
+                        value={acquiredQty}
+                        onChange={event => setAcquiredQuantity(item.id, Number(event.target.value))}
+                        className="mt-1 w-full bg-input-background rounded-lg border border-border px-3 py-2 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition"
+                      />
                     </div>
 
                     <p className="mt-3 text-[0.75rem] text-muted-foreground truncate">From: {item.recipeTitle}</p>
