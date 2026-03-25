@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate, Link, useSearchParams } from 'react-router';
 import { useAppStore } from '../store';
 import { ChefHat, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
@@ -11,6 +11,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const showRegisterShortcut = /account not found/i.test(error);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +41,18 @@ export function LoginPage() {
         <div className="bg-card rounded-2xl border border-border shadow-sm p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-[0.85rem]">{error}</div>
+              <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-[0.85rem] space-y-2">
+                <p>{error}</p>
+                {showRegisterShortcut && (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/register?email=${encodeURIComponent(email)}`)}
+                    className="inline-flex items-center text-[0.8rem] underline hover:no-underline"
+                  >
+                    Create account with this email
+                  </button>
+                )}
+              </div>
             )}
             <div>
               <label className="block mb-1.5 text-[0.85rem]">Email</label>
@@ -103,8 +115,9 @@ export function LoginPage() {
 export function RegisterPage() {
   const { register } = useAppStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => searchParams.get('email') ?? '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
