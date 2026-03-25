@@ -248,17 +248,17 @@ export function GroceryListPage() {
             {groceryList.filter(i => i.purchased).length} of {groceryList.length} items purchased
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
           <button
             onClick={handleRegenerate}
-            className="px-3 py-2 rounded-lg border border-border text-[0.85rem] hover:bg-secondary transition-colors inline-flex items-center gap-2"
+            className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border text-[0.85rem] hover:bg-secondary transition-colors inline-flex items-center justify-center gap-2"
           >
             <RotateCcw className="w-4 h-4" /> Regenerate
           </button>
           {purchased.length > 0 && (
             <button
               onClick={handleClearPurchased}
-              className="px-3 py-2 rounded-lg border border-border text-[0.85rem] text-destructive hover:bg-destructive/10 transition-colors inline-flex items-center gap-2"
+              className="w-full sm:w-auto px-3 py-2 rounded-lg border border-border text-[0.85rem] text-destructive hover:bg-destructive/10 transition-colors inline-flex items-center justify-center gap-2"
             >
               <Trash2 className="w-4 h-4" /> Clear Purchased
             </button>
@@ -328,9 +328,9 @@ export function GroceryListPage() {
         <div className="space-y-4">
           <button
             onClick={() => setShowPurchased(!showPurchased)}
-            className="w-full px-4 py-3 bg-card rounded-xl border border-border flex items-center justify-between"
+            className="w-full px-4 py-3 bg-card rounded-xl border border-border flex items-start sm:items-center justify-between gap-3"
           >
-            <h3 className="text-muted-foreground">
+            <h3 className="text-muted-foreground text-left text-[0.85rem] sm:text-base">
               {showPurchased ? 'Showing all items' : 'Showing only unpurchased'}
               {' '}
               ({showPurchased ? filtered.length : unpurchased.length})
@@ -338,7 +338,7 @@ export function GroceryListPage() {
             {showPurchased ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
           </button>
 
-          <div className="grid sm:grid-cols-3 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {(Object.keys(CATEGORY_LABELS) as GroceryCategory[]).map(category => {
               const count = categoryCounts[category];
               const selected = activeCategory === category;
@@ -359,7 +359,7 @@ export function GroceryListPage() {
           </div>
 
           {activeItems.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {activeItems.map(item => {
                 const orderedQty = getOrderedQuantity(item.amount);
                 const acquiredQty = acquiredById[item.id] ?? (item.purchased ? orderedQty : 0);
@@ -376,17 +376,17 @@ export function GroceryListPage() {
                         loading="lazy"
                       />
                     </div>
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div>
                         <p className={`text-[0.95rem] ${item.purchased ? 'line-through' : ''}`}>{item.name}</p>
                         <p className="text-[0.8rem] text-muted-foreground">{item.amount} {item.unit}</p>
                       </div>
-                      <span className="text-[0.75rem] px-2 py-1 rounded-md bg-secondary text-muted-foreground">
+                      <span className="text-[0.75rem] px-2 py-1 rounded-md bg-secondary text-muted-foreground w-fit">
                         PHP {unitPrice.toFixed(2)}
                       </span>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-3 text-[0.8rem]">
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-[0.8rem]">
                       <div className="rounded-lg border border-border p-2">
                         <p className="text-muted-foreground">Ordered</p>
                         <p className="mt-0.5">{orderedQty}</p>
