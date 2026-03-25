@@ -6,10 +6,68 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+type GroceryCategory = 'vegetables' | 'ingredients' | 'meats';
+
+const ITEM_PRICE_MAP: Record<string, number> = {
+  potato: 25,
+  potatoes: 25,
+  onion: 18,
+  onions: 18,
+  garlic: 10,
+  carrot: 20,
+  carrots: 20,
+  cabbage: 45,
+  tomato: 12,
+  tomatoes: 12,
+  pork: 320,
+  beef: 420,
+  chicken: 260,
+  fish: 300,
+  shrimp: 460,
+  egg: 9,
+  eggs: 9,
+  rice: 60,
+  salt: 8,
+  sugar: 7,
+  oil: 14,
+};
+
+const CATEGORY_LABELS: Record<GroceryCategory, string> = {
+  vegetables: 'Vegetables',
+  ingredients: 'Ingredients',
+  meats: 'Meats',
+};
+
+const categorizeItem = (name: string): GroceryCategory => {
+  const lower = name.toLowerCase();
+
+  if (/(beef|pork|chicken|meat|fish|shrimp|sausage|bacon|ham|liver)/.test(lower)) {
+    return 'meats';
+  }
+
+  if (/(potato|onion|garlic|carrot|cabbage|pepper|eggplant|radish|kangkong|lettuce|spinach|tomato|vegetable)/.test(lower)) {
+    return 'vegetables';
+  }
+
+  return 'ingredients';
+};
+
+const getEstimatedPrice = (name: string): number => {
+  const lower = name.toLowerCase();
+  const match = Object.keys(ITEM_PRICE_MAP).find(key => lower.includes(key));
+  return match ? ITEM_PRICE_MAP[match] : 30;
+};
+
+const getOrderedQuantity = (amount: string): number => {
+  const parsed = parseFloat(amount);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+};
+
 export function GroceryListPage() {
   const { groceryList, mealPlan, toggleGroceryItem, clearPurchasedItems, generateGroceryList, addNotification } = useAppStore();
   const [search, setSearch] = useState('');
   const [showPurchased, setShowPurchased] = useState(true);
+  const [acquiredById, setAcquiredById] = useState<Record<string, number>>({});
   const hasShownEmptyWarningRef = useRef(false);
 
   const filtered = useMemo(() => {
@@ -23,6 +81,20 @@ export function GroceryListPage() {
 
   const unpurchased = filtered.filter(i => !i.purchased);
   const purchased = filtered.filter(i => i.purchased);
+  const visibleItems = showPurchased ? filtered : unpurchased;
+  const categorizedItems = useMemo(() => {
+    const grouped: Record<GroceryCategory, typeof visibleItems> = {
+      vegetables: [],
+      ingredients: [],
+      meats: [],
+    };
+
+    for (const item of visibleItems) {
+      grouped[categorizeItem(item.name)].push(item);
+    }
+
+    return grouped;
+  }, [visibleItems]);
   const plannedMealsCount = useMemo(
     () => Object.values(mealPlan).reduce((count, day) => count + Object.keys(day).length, 0),
     [mealPlan]
@@ -42,6 +114,26 @@ export function GroceryListPage() {
       hasShownEmptyWarningRef.current = false;
     }
   }, [groceryList.length, addNotification]);
+
+  useEffect(() => {
+    setAcquiredById(prev => {
+      const next: Record<string, number> = {};
+
+      for (const item of groceryList) {
+        const orderedQty = getOrderedQuantity(item.amount);
+        const existingValue = prev[item.id];
+
+        if (typeof existingValue === 'number') {
+          next[item.id] = existingValue;
+          continue;
+        }
+
+        next[item.id] = item.purchased ? orderedQty : 0;
+      }
+
+      return next;
+    });
+  }, [groceryList]);
 
   const handleRegenerate = () => {
     generateGroceryList();
@@ -66,6 +158,36 @@ export function GroceryListPage() {
     clearPurchasedItems();
     addNotification('Purchased grocery items were cleared.');
     toast.success('Purchased items cleared.');
+  };
+
+  const setAcquiredQuantity = (itemId: string, acquired: number) => {
+    const item = groceryList.find(entry => entry.id === itemId);
+    if (!item) return;
+
+    const safeAcquired = Math.max(0, acquired);
+    const orderedQty = getOrderedQuantity(item.amount);
+
+    setAcquiredById(prev => ({ ...prev, [itemId]: safeAcquired }));
+
+    const shouldBePurchased = safeAcquired >= orderedQty;
+    if (shouldBePurchased !== item.purchased) {
+      toggleGroceryItem(itemId);
+    }
+  };
+
+  const togglePurchasedState = (itemId: string) => {
+    const item = groceryList.find(entry => entry.id === itemId);
+    if (!item) return;
+
+    const orderedQty = getOrderedQuantity(item.amount);
+    const nextPurchased = !item.purchased;
+
+    setAcquiredById(prev => ({
+      ...prev,
+      [itemId]: nextPurchased ? orderedQty : 0,
+    }));
+
+    toggleGroceryItem(itemId);
   };
 
   return (
@@ -156,63 +278,93 @@ export function GroceryListPage() {
         </div>
       )}
 
-      {/* Unpurchased items */}
-      {unpurchased.length > 0 && (
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 bg-secondary/30 border-b border-border">
-            <h3>To Buy ({unpurchased.length})</h3>
-          </div>
-          <div className="divide-y divide-border">
-            {unpurchased.map(item => (
-              <div
-                key={item.id}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/30 transition-colors cursor-pointer"
-                onClick={() => toggleGroceryItem(item.id)}
-              >
-                <div className="w-5 h-5 rounded border-2 border-border flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[0.9rem]">{item.name}</p>
-                  <p className="text-muted-foreground text-[0.75rem] truncate">
-                    {item.amount} {item.unit} &middot; {item.recipeTitle}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Purchased items */}
-      {purchased.length > 0 && (
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
+      {/* Category tables */}
+      {groceryList.length > 0 && (
+        <div className="space-y-4">
           <button
             onClick={() => setShowPurchased(!showPurchased)}
-            className="w-full px-4 py-3 bg-secondary/30 border-b border-border flex items-center justify-between"
+            className="w-full px-4 py-3 bg-card rounded-xl border border-border flex items-center justify-between"
           >
-            <h3 className="text-muted-foreground">Purchased ({purchased.length})</h3>
+            <h3 className="text-muted-foreground">
+              {showPurchased ? 'Showing all items' : 'Showing only unpurchased'}
+              {' '}
+              ({showPurchased ? filtered.length : unpurchased.length})
+            </h3>
             {showPurchased ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
           </button>
-          {showPurchased && (
-            <div className="divide-y divide-border">
-              {purchased.map(item => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/30 transition-colors cursor-pointer opacity-60"
-                  onClick={() => toggleGroceryItem(item.id)}
-                >
-                  <div className="w-5 h-5 rounded border-2 border-primary bg-primary flex items-center justify-center flex-shrink-0">
-                    <Check className="w-3 h-3 text-primary-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[0.9rem] line-through">{item.name}</p>
-                    <p className="text-muted-foreground text-[0.75rem] truncate">
-                      {item.amount} {item.unit} &middot; {item.recipeTitle}
-                    </p>
-                  </div>
+
+          {(Object.keys(categorizedItems) as GroceryCategory[]).map(categoryKey => {
+            const items = categorizedItems[categoryKey];
+            if (items.length === 0) return null;
+
+            return (
+              <div key={categoryKey} className="bg-card rounded-xl border border-border overflow-hidden">
+                <div className="px-4 py-3 bg-secondary/30 border-b border-border flex items-center justify-between">
+                  <h3>{CATEGORY_LABELS[categoryKey]}</h3>
+                  <span className="text-[0.8rem] text-muted-foreground">{items.length} items</span>
                 </div>
-              ))}
-            </div>
-          )}
+
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[780px] text-left">
+                    <thead className="bg-secondary/20 text-[0.75rem] text-muted-foreground uppercase tracking-wide">
+                      <tr>
+                        <th className="px-4 py-3">Item</th>
+                        <th className="px-4 py-3">Price</th>
+                        <th className="px-4 py-3">Ordered</th>
+                        <th className="px-4 py-3">Acquired</th>
+                        <th className="px-4 py-3">Recipe</th>
+                        <th className="px-4 py-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map(item => {
+                        const orderedQty = getOrderedQuantity(item.amount);
+                        const acquiredQty = acquiredById[item.id] ?? (item.purchased ? orderedQty : 0);
+                        const unitPrice = getEstimatedPrice(item.name);
+                        const subtotal = unitPrice * orderedQty;
+
+                        return (
+                          <tr key={item.id} className={`border-t border-border ${item.purchased ? 'opacity-70' : ''}`}>
+                            <td className="px-4 py-3">
+                              <p className={`text-[0.9rem] ${item.purchased ? 'line-through' : ''}`}>{item.name}</p>
+                              <p className="text-[0.75rem] text-muted-foreground">{item.amount} {item.unit}</p>
+                            </td>
+                            <td className="px-4 py-3 text-[0.85rem]">
+                              <p>PHP {unitPrice.toFixed(2)}</p>
+                              <p className="text-[0.75rem] text-muted-foreground">Total: PHP {subtotal.toFixed(2)}</p>
+                            </td>
+                            <td className="px-4 py-3 text-[0.85rem]">{orderedQty}</td>
+                            <td className="px-4 py-3">
+                              <input
+                                type="number"
+                                min={0}
+                                step="0.5"
+                                value={acquiredQty}
+                                onChange={event => setAcquiredQuantity(item.id, Number(event.target.value))}
+                                className="w-24 bg-input-background rounded-lg border border-border px-2 py-1.5 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-[0.8rem] text-muted-foreground max-w-[220px] truncate">{item.recipeTitle}</td>
+                            <td className="px-4 py-3">
+                              <button
+                                onClick={() => togglePurchasedState(item.id)}
+                                className={`px-3 py-1.5 rounded-md text-[0.75rem] inline-flex items-center gap-1.5 border transition-colors ${item.purchased
+                                  ? 'border-primary/40 bg-primary/10 text-primary'
+                                  : 'border-border text-muted-foreground hover:text-foreground hover:bg-secondary'}`}
+                              >
+                                {item.purchased ? <Check className="w-3.5 h-3.5" /> : null}
+                                {item.purchased ? 'Acquired' : 'Mark acquired'}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
