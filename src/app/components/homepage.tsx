@@ -5,7 +5,7 @@ import { defaultRecipes, CATEGORIES } from '../data';
 import { motion } from 'motion/react';
 import {
   ChefHat, Calendar, ShoppingCart, Heart, Star, Clock, Users,
-  ArrowRight, Sparkles, Check, Upload, Utensils, BookOpen, Zap
+  ArrowRight, Sparkles, Check, Upload, Utensils, BookOpen, Zap, Menu, X
 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { ThemeToggle } from './theme-toggle';
@@ -81,6 +81,7 @@ const testimonials = [
 export function HomePage() {
   const { isAuthenticated } = useAppStore();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const previewRecipes = defaultRecipes.slice(0, 4);
 
   const handleGetStarted = () => {
@@ -91,12 +92,16 @@ export function HomePage() {
     navigate(isAuthenticated ? '/dashboard' : '/login');
   };
 
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-xl supports-[backdrop-filter]:bg-card/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-3 py-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+          <div className="flex items-center justify-between py-3 sm:h-16 sm:py-0">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-primary/90 flex items-center justify-center shadow-sm">
                 <ChefHat className="w-5 h-5 text-primary-foreground" />
@@ -106,7 +111,8 @@ export function HomePage() {
                 <p className="text-[0.72rem] text-muted-foreground leading-none mt-1">Plan better every day</p>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-2 sm:gap-3">
+
+            <div className="hidden sm:flex items-center justify-end gap-2 sm:gap-3">
               <div className="rounded-lg border border-border bg-card px-1.5 py-1">
                 <ThemeToggle />
               </div>
@@ -134,7 +140,62 @@ export function HomePage() {
                 </>
               )}
             </div>
+
+            <div className="flex items-center gap-2 sm:hidden">
+              <div className="rounded-lg border border-border bg-card px-1.5 py-1">
+                <ThemeToggle />
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(open => !open)}
+                className="h-10 w-10 rounded-lg border border-border bg-card text-foreground hover:bg-secondary transition-colors inline-flex items-center justify-center"
+                aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="homepage-mobile-menu"
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
+
+          {isMobileMenuOpen && (
+            <div id="homepage-mobile-menu" className="pb-3 sm:hidden">
+              <div className="rounded-xl border border-border bg-card p-2 flex flex-col gap-2">
+                {isAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      navigate('/dashboard');
+                      closeMobileMenu();
+                    }}
+                    className="h-10 bg-primary text-primary-foreground px-4 rounded-lg hover:opacity-90 transition inline-flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    Go to Dashboard <ArrowRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        handleLogin();
+                        closeMobileMenu();
+                      }}
+                      className="h-10 px-4 rounded-lg text-foreground border border-border hover:bg-secondary transition-colors"
+                    >
+                      Log In
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleGetStarted();
+                        closeMobileMenu();
+                      }}
+                      className="h-10 bg-primary text-primary-foreground px-4 rounded-lg hover:opacity-90 transition inline-flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      Get Started <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
