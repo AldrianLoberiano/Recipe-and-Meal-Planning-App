@@ -33,8 +33,8 @@ const ITEM_PRICE_MAP: Record<string, number> = {
 };
 
 const ITEM_IMAGE_MAP: Record<string, string> = {
-  potato: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=640&q=80',
-  potatoes: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=640&q=80',
+  potato: 'https://image.shutterstock.com/image-photo/pile-fresh-small-potatoes-harvest-250nw-2647898631.jpg',
+  potatoes: 'https://image.shutterstock.com/image-photo/pile-fresh-small-potatoes-harvest-250nw-2647898631.jpg',
   onion: 'https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=640&q=80',
   onions: 'https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=640&q=80',
   garlic: 'https://images.unsplash.com/photo-1615477550927-6ec5f6f4ea84?auto=format&fit=crop&w=640&q=80',
