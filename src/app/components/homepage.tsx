@@ -94,21 +94,26 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-xl supports-[backdrop-filter]:bg-card/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+          <div className="flex flex-col gap-3 py-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/90 flex items-center justify-center shadow-sm">
                 <ChefHat className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-foreground">MealCraft</span>
+              <div>
+                <span className="text-foreground leading-none">MealCraft</span>
+                <p className="text-[0.72rem] text-muted-foreground leading-none mt-1">Plan better every day</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
+            <div className="flex items-center justify-end gap-2 sm:gap-3">
+              <div className="rounded-lg border border-border bg-card px-1.5 py-1">
+                <ThemeToggle />
+              </div>
               {isAuthenticated ? (
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="bg-primary text-primary-foreground px-5 py-2 rounded-lg hover:opacity-90 transition inline-flex items-center gap-2"
+                  className="h-10 bg-primary text-primary-foreground px-4 sm:px-5 rounded-lg hover:opacity-90 transition inline-flex items-center gap-2 shadow-sm"
                 >
                   Go to Dashboard <ArrowRight className="w-4 h-4" />
                 </button>
@@ -116,13 +121,13 @@ export function HomePage() {
                 <>
                   <button
                     onClick={handleLogin}
-                    className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                    className="h-10 px-3 sm:px-4 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                   >
                     Log In
                   </button>
                   <button
                     onClick={handleGetStarted}
-                    className="bg-primary text-primary-foreground px-5 py-2 rounded-lg hover:opacity-90 transition inline-flex items-center gap-2"
+                    className="h-10 bg-primary text-primary-foreground px-4 sm:px-5 rounded-lg hover:opacity-90 transition inline-flex items-center gap-2 shadow-sm"
                   >
                     Get Started <ArrowRight className="w-4 h-4" />
                   </button>
