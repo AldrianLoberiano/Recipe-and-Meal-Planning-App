@@ -236,7 +236,7 @@ export function GroceryListPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 px-2 sm:px-4 lg:px-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -338,7 +338,7 @@ export function GroceryListPage() {
             {showPurchased ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
           </button>
 
-          <div className="grid sm:grid-cols-3 gap-3">
+          <div className="grid sm:grid-cols-3 lg:grid-cols-3 gap-3">
             {(Object.keys(CATEGORY_LABELS) as GroceryCategory[]).map(category => {
               const count = categoryCounts[category];
               const selected = activeCategory === category;
@@ -359,7 +359,7 @@ export function GroceryListPage() {
           </div>
 
           {activeItems.length > 0 ? (
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {activeItems.map(item => {
                 const orderedQty = getOrderedQuantity(item.amount);
                 const acquiredQty = acquiredById[item.id] ?? (item.purchased ? orderedQty : 0);
