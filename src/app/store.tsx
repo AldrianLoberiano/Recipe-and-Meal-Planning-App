@@ -55,17 +55,9 @@ function loadFromStorage<T>(key: string, fallback: T): T {
   }
 }
 
-function loadRecipesWithSeedMerge(): Recipe[] {
+function loadRecipes(): Recipe[] {
   const stored = loadFromStorage<Recipe[]>('mealplanner_recipes', defaultRecipes);
-
-  if (!Array.isArray(stored)) {
-    return defaultRecipes;
-  }
-
-  const existingIds = new Set(stored.map(recipe => recipe.id));
-  const missingDefaults = defaultRecipes.filter(recipe => !existingIds.has(recipe.id));
-
-  return missingDefaults.length > 0 ? [...stored, ...missingDefaults] : stored;
+  return Array.isArray(stored) ? stored : defaultRecipes;
 }
 
 function normalizeApiBaseUrl(rawBaseUrl: string): string {
@@ -151,7 +143,7 @@ function syncRecipeToSql(recipe: Recipe) {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => loadFromStorage('mealplanner_user', null));
-  const [recipes, setRecipes] = useState<Recipe[]>(() => loadRecipesWithSeedMerge());
+  const [recipes, setRecipes] = useState<Recipe[]>(() => loadRecipes());
   const [mealPlan, setMealPlan] = useState<MealPlan>(() => loadFromStorage('mealplanner_mealplan', defaultMealPlan));
   const [groceryList, setGroceryList] = useState<GroceryItem[]>(() => loadFromStorage('mealplanner_grocery', []));
   const [notifications, setNotifications] = useState<{ id: string; message: string; time: string }[]>([]);
