@@ -32,6 +32,27 @@ const ITEM_PRICE_MAP: Record<string, number> = {
   oil: 14,
 };
 
+const ITEM_IMAGE_MAP: Record<string, string> = {
+  potato: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=640&q=80',
+  potatoes: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=640&q=80',
+  onion: 'https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=640&q=80',
+  onions: 'https://images.unsplash.com/photo-1508747703725-719777637510?auto=format&fit=crop&w=640&q=80',
+  garlic: 'https://images.unsplash.com/photo-1615477550927-6ec5f6f4ea84?auto=format&fit=crop&w=640&q=80',
+  tomato: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=640&q=80',
+  tomatoes: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=640&q=80',
+  carrot: 'https://images.unsplash.com/photo-1447175008436-054170c2e979?auto=format&fit=crop&w=640&q=80',
+  carrots: 'https://images.unsplash.com/photo-1447175008436-054170c2e979?auto=format&fit=crop&w=640&q=80',
+  cabbage: 'https://images.unsplash.com/photo-1611105637889-3afd7295bdbf?auto=format&fit=crop&w=640&q=80',
+  chicken: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&w=640&q=80',
+  beef: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=640&q=80',
+  pork: 'https://images.unsplash.com/photo-1603048297172-c92544798d5a?auto=format&fit=crop&w=640&q=80',
+  fish: 'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?auto=format&fit=crop&w=640&q=80',
+  shrimp: 'https://images.unsplash.com/photo-1565680018434-b513d7fc0d95?auto=format&fit=crop&w=640&q=80',
+  rice: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=640&q=80',
+  egg: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=640&q=80',
+  eggs: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=640&q=80',
+};
+
 const CATEGORY_LABELS: Record<GroceryCategory, string> = {
   vegetables: 'Vegetables',
   ingredients: 'Ingredients',
@@ -56,6 +77,15 @@ const getEstimatedPrice = (name: string): number => {
   const lower = name.toLowerCase();
   const match = Object.keys(ITEM_PRICE_MAP).find(key => lower.includes(key));
   return match ? ITEM_PRICE_MAP[match] : 30;
+};
+
+const getItemImage = (name: string): string => {
+  const lower = name.toLowerCase();
+  const match = Object.keys(ITEM_IMAGE_MAP).find(key => lower.includes(key));
+  if (match) return ITEM_IMAGE_MAP[match];
+
+  const seed = encodeURIComponent(lower.replace(/\s+/g, '-'));
+  return `https://picsum.photos/seed/grocery-${seed}/640/420`;
 };
 
 const getOrderedQuantity = (amount: string): number => {
@@ -338,6 +368,14 @@ export function GroceryListPage() {
 
                 return (
                   <div key={item.id} className={`rounded-xl border p-4 bg-card ${item.purchased ? 'opacity-70' : ''}`}>
+                    <div className="mb-3 overflow-hidden rounded-lg border border-border">
+                      <img
+                        src={getItemImage(item.name)}
+                        alt={item.name}
+                        className="h-32 w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className={`text-[0.95rem] ${item.purchased ? 'line-through' : ''}`}>{item.name}</p>
