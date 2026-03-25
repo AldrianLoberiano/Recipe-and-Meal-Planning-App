@@ -54,7 +54,7 @@ const features = [
 ];
 
 const stats = [
-  { value: '8+', label: 'Sample Recipes' },
+  { value: `${defaultRecipes.length}`, label: 'Recipes' },
   { value: '28', label: 'Meal Slots/Week' },
   { value: '100%', label: 'Free & Offline' },
   { value: '5', label: 'Nutrition Metrics' },
@@ -75,29 +75,6 @@ const testimonials = [
     name: 'Emily R.',
     text: "Finally an app that tracks nutrition without being overwhelming. The beautiful interface makes meal planning actually enjoyable.",
     rating: 4,
-  },
-];
-
-const demoSteps = [
-  {
-    title: '1. Sign In (Demo Mode)',
-    description: 'Go to login and enter any email/password to access the app instantly.',
-  },
-  {
-    title: '2. Add or Import Recipes',
-    description: 'Browse recipe cards, create your own, or import recipe text automatically.',
-  },
-  {
-    title: '3. Plan Meals for the Week',
-    description: 'Drag and drop recipes into breakfast, lunch, dinner, and snack slots.',
-  },
-  {
-    title: '4. Review Nutrition Summary',
-    description: 'Check weekly calories, protein, carbs, fat, and fiber with daily averages.',
-  },
-  {
-    title: '5. Generate Grocery List',
-    description: 'Create your shopping list automatically and track purchased items.',
   },
 ];
 
@@ -384,7 +361,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Sample Recipes */}
+      {/* Product Walkthrough */}
       <section className="py-16 sm:py-24 bg-card/50 border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -393,14 +370,35 @@ export function HomePage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl sm:text-4xl text-foreground mb-3">Live Demo Walkthrough</h2>
+            <h2 className="text-3xl sm:text-4xl text-foreground mb-3">Quick Start Walkthrough</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              New to MealCraft? Follow this quick path to experience the full workflow in a few minutes.
+              New to MealCraft? Follow this quick path to build your first meal plan in a few minutes.
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {demoSteps.map((step, i) => (
+            {[
+              {
+                title: '1. Sign In',
+                description: 'Create your account or log in to access your personal recipe workspace.',
+              },
+              {
+                title: '2. Add or Import Recipes',
+                description: 'Create recipes manually or paste recipe text and let the parser fill details.',
+              },
+              {
+                title: '3. Plan Your Week',
+                description: 'Drag and drop recipes into breakfast, lunch, dinner, and snack slots.',
+              },
+              {
+                title: '4. Review Nutrition Summary',
+                description: 'Check weekly calories, protein, carbs, fat, and fiber with daily averages.',
+              },
+              {
+                title: '5. Generate Grocery List',
+                description: 'Create your shopping list automatically and track purchased items.',
+              },
+            ].map((step, i) => (
               <motion.div
                 key={step.title}
                 initial={{ opacity: 0, y: 20 }}
@@ -420,13 +418,13 @@ export function HomePage() {
               onClick={handleLogin}
               className="bg-primary text-primary-foreground px-8 py-3 rounded-xl hover:opacity-90 transition inline-flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
             >
-              Start Demo <ArrowRight className="w-5 h-5" />
+              Get Started <ArrowRight className="w-5 h-5" />
             </button>
           </div>
         </div>
       </section>
 
-      {/* Sample Recipes */}
+      {/* Recipe Preview */}
       <section className="py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -435,12 +433,13 @@ export function HomePage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl sm:text-4xl text-foreground mb-3">Explore sample recipes</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">Get started instantly with our curated collection of delicious, tested recipes.</p>
+            <h2 className="text-3xl sm:text-4xl text-foreground mb-3">Explore recipes</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">Your saved recipes will appear here as soon as you start adding them.</p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {previewRecipes.map((recipe, i) => {
+          {previewRecipes.length > 0 ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {previewRecipes.map((recipe, i) => {
               const category = CATEGORIES.find(c => c.value === recipe.category);
               return (
                 <motion.div
@@ -480,15 +479,20 @@ export function HomePage() {
                   </div>
                 </motion.div>
               );
-            })}
-          </div>
+              })}
+            </div>
+          ) : (
+            <div className="bg-card rounded-xl border border-border p-8 text-center">
+              <p className="text-muted-foreground">No recipes yet. Create your first one to start planning meals.</p>
+            </div>
+          )}
 
           <div className="text-center mt-8">
             <button
               onClick={handleGetStarted}
               className="text-primary hover:underline inline-flex items-center gap-1"
             >
-              View all {defaultRecipes.length} recipes <ArrowRight className="w-4 h-4" />
+              Open recipe planner <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
