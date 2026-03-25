@@ -169,8 +169,13 @@ app.post('/api/auth/login', async (req, res) => {
     );
 
     const user = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
-    if (!user || !verifyPassword(password, user.password_hash)) {
-      res.status(401).json({ ok: false, message: 'Invalid email or password.' });
+    if (!user) {
+      res.status(404).json({ ok: false, message: 'Account not found. Please register first.' });
+      return;
+    }
+
+    if (!verifyPassword(password, user.password_hash)) {
+      res.status(401).json({ ok: false, message: 'Incorrect password. Please try again.' });
       return;
     }
 
