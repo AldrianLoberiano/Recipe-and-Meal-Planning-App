@@ -181,35 +181,6 @@ function parseRecipeText(text: string): ParsedRecipe {
   };
 }
 
-const SAMPLE_RECIPE = `Classic Spaghetti Bolognese
-A hearty Italian meat sauce served over al dente spaghetti.
-
-Prep time: 15 min
-Cook time: 45 min
-Serves: 6
-
-Ingredients:
-- 1 lb ground beef
-- 1 medium onion, diced
-- 3 cloves garlic, minced
-- 1 can crushed tomatoes
-- 2 tbsp tomato paste
-- 1 tsp Italian seasoning
-- 1/2 tsp salt
-- 1/4 tsp black pepper
-- 1 lb spaghetti
-- 2 tbsp olive oil
-- 1/4 cup Parmesan cheese
-
-Instructions:
-1. Cook spaghetti according to package directions. Drain and set aside.
-2. Heat olive oil in a large skillet over medium-high heat.
-3. Add ground beef and cook until browned, breaking it apart, about 5-7 minutes.
-4. Add diced onion and garlic, cook for 3 minutes until softened.
-5. Stir in crushed tomatoes, tomato paste, Italian seasoning, salt, and pepper.
-6. Reduce heat to low and simmer for 30 minutes, stirring occasionally.
-7. Serve sauce over spaghetti and top with grated Parmesan cheese.`;
-
 export function RecipeImport() {
   const navigate = useNavigate();
   const { addRecipe } = useAppStore();
@@ -236,11 +207,6 @@ export function RecipeImport() {
     } catch {
       toast.error('Unable to read clipboard. Please paste manually.');
     }
-  };
-
-  const handleUseSample = () => {
-    setRawText(SAMPLE_RECIPE);
-    toast.success('Sample recipe loaded!');
   };
 
   const handleSave = () => {
@@ -349,12 +315,6 @@ export function RecipeImport() {
                   className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 text-[0.8rem]"
                 >
                   <Clipboard className="w-3.5 h-3.5" /> Paste
-                </button>
-                <button
-                  onClick={handleUseSample}
-                  className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors inline-flex items-center gap-1.5 text-[0.8rem]"
-                >
-                  <Sparkles className="w-3.5 h-3.5" /> Use Sample
                 </button>
               </div>
             </div>
