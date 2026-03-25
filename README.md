@@ -8,7 +8,7 @@ The project includes:
 
 - A client app (React, React Router, Tailwind) with recipe CRUD, meal planning, templates, drag-and-drop, and nutrition summaries.
 - A lightweight Node/Express API for syncing recipes to MySQL.
-- SQL seed scripts for MySQL schema and sample data.
+- SQL scripts for MySQL schema initialization (no default seed records).
 
 ## Current Features
 
