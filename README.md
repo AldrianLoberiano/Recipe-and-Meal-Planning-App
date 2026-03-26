@@ -255,7 +255,7 @@ Protected/app layout routes:
 
 ## Git Ignore and Sensitive Files
 
-The repository ignores sensitive and machine-local files through `.gitignore`.
+The repository ignores sensitive and machine-local files through `.gitignore`.  
 
 Important ignored categories:
 
